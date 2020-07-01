@@ -37,7 +37,7 @@ def ver_lista_chequeo(request, pk_lc):
     tipos_chequeo = lst_chequeo.tipos_chequeo.all()
     return render(
         request,
-        'listas_chequeo_view.html',
+        'lista_chequeo_view.html',
         {
             'lst_chequeo': lst_chequeo,
             'tipos_chequeo': tipos_chequeo,
@@ -115,12 +115,16 @@ def ver_tipo_chequeo(request, pk_tc):
     """
     Muestra la información completa de un tipo de chequeo
     """
+    # print(request.META['referer'])
+    print(request.headers['referer'])
     tipo_chequeo = get_object_or_404(TipoChequeo, pk=pk_tc)
+    chequeos = Chequeo.objects.filter(tipo_chequeo__pk=pk_tc)
     return render(
         request,
-        'ver_tipo_chequeo.html',
+        'tipo_chequeo_view.html',
         {
             'tipo_chequeo': tipo_chequeo,
+            'chequeos': chequeos,
             'g_perms': request.user.get_all_permissions()
         }
     )
@@ -187,14 +191,12 @@ def agrega_chequeo(request, pk_proy, pk_doc):
         for id_chk in id_listas_chequeo_sel:
             lista_chequeo = ListaChequeo.objects.get(pk=id_chk)
             tipos_chequeo_en_lista = lista_chequeo.tipos_chequeo.all()
+            tipos_chequeos_en_doc = [
+                tchk_doc.tipo_chequeo for tchk_doc in chequeos_doc
+            ]
             for tcl in tipos_chequeo_en_lista:
-                print(tcl)
-                tipos_chequeos_en_doc = [
-                    tchk_doc.tipo_chequeo for tchk_doc in chequeos_doc
-                ]
                 if tcl not in tipos_chequeos_en_doc:
-                    print(' no está y guardo.')
-                    # Creo un objeto Chequeo y le agrego el documento, lo guardo
+                    # Creo un objeto Chequeo, le agrego el documento y lo guardo
                     chequeo_doc = Chequeo(
                         documento=doc,
                         tipo_chequeo=tcl,
@@ -203,10 +205,8 @@ def agrega_chequeo(request, pk_proy, pk_doc):
                         verificado_por=None,
                     )
                     chequeo_doc.save()
-                else:
-                    print(' está y paso de largo.')
 
-                chequeos_doc = Chequeo.objects.filter(documento__pk=pk_doc)
+        chequeos_doc = Chequeo.objects.filter(documento__pk=pk_doc)
 
     return render(
         request,
@@ -227,17 +227,39 @@ def hace_chequeo(request, pk_proy, pk_doc):
     Realiza el control de calidad de un documento a partir de sus chequeos
     """
     doc = get_object_or_404(Documento, pk=pk_proy)
-    chequeos_doc = Chequeo.objects.filter(documento__pk=pk_doc)
+    chequeos_doc = Chequeo.objects.filter(documento__pk=pk_doc).order_by('tipo_chequeo')
 
     if request.method == "POST":
         verificados = request.POST.getlist('verificado')
         aplica = request.POST.getlist('aplica')
-        print('Verificados:')
-        for verif in verificados:
-            print(verif)
-        print('Aplica:')
-        for apl in aplica:
-            print(apl)
+        for chequeo in chequeos_doc:
+            if chequeo.aplica:
+                if str(chequeo.pk) in aplica:
+                    # Aplicaba y aplica
+                    if str(chequeo.pk) in verificados:
+                        if not chequeo.verificado:
+                            chequeo.verificado = True
+                            chequeo.verificado_por = request.user
+                    else:
+                        if chequeo.verificado:
+                            chequeo.verificado = False
+                            chequeo.verificado_por = request.user
+                else:
+                    # Aplicaba pero ahora no aplica
+                    chequeo.aplica = False
+                    chequeo.verificado = False
+                    chequeo.verificado_por = request.user
+            else:
+                if str(chequeo.pk) in aplica:
+                    # No aplicaba pero ahora aplica
+                    chequeo.aplica = True
+                    chequeo.verificado_por = request.user
+                    if str(chequeo.pk) in verificados:
+                        chequeo.verificado = True
+                    else:
+                        chequeo.verificado = False
+
+            chequeo.save()
 
     return render(
         request,

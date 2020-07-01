@@ -41,7 +41,7 @@
                 <td>{{ chk.tipo_chequeo.nombre }}</td>
                 <td>{{ chk.tipo_chequeo.ayuda }}</td>
                 {% if 'calidad.delete_chequeo' in g_perms %}
-                <td><a class="material-icons" data-toggle="tooltip" title="Quitar chequeo del Documento" href="{% url 'elimina_chequeo' pk_proy=pk_proy pk_doc=documento.pk pk_chk=chk.pk %}">delete</a></td>
+                <td><a class="material-icons md-18" data-toggle="tooltip" title="Quitar chequeo del Documento" href="{% url 'elimina_chequeo' pk_proy=pk_proy pk_doc=documento.pk pk_chk=chk.pk %}">delete</a></td>
                 {% endif %}
             </tr>
             {% endfor %}

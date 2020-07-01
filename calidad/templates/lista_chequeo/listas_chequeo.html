@@ -33,15 +33,15 @@
                 <td>{{ lstchk.tipo_documento }}</td>
                 <td>{{ lstchk.nombre }}</td>
                 {% if 'calidad.view_listachequeo' in g_perms %}
-                    <td><a class="material-icons" data-toggle="tooltip" title="Ver detalles de la Lista de Chequeo" href="{% url 'ver_lista_chequeo' pk_lc=lstchk.pk %}">visibility</a></td>
+                    <td><a class="material-icons md-18" data-toggle="tooltip" title="Ver detalles de la Lista de Chequeo" href="{% url 'ver_lista_chequeo' pk_lc=lstchk.pk %}">visibility</a></td>
                 {% endif %}
 
                 {% if 'calidad.change_listachequeo' in g_perms %}
-                    <td><a class="material-icons" data-toggle="tooltip" title="Editar Lista de Chequeo" href="{% url 'edita_lista_chequeo' pk_lc=lstchk.pk %}">edit</a></td>
+                    <td><a class="material-icons md-18" data-toggle="tooltip" title="Editar Lista de Chequeo" href="{% url 'edita_lista_chequeo' pk_lc=lstchk.pk %}">edit</a></td>
                 {% endif %}
 
                 {% if 'calidad.delete_listachequeo' in g_perms %}
-                    <td><a class="material-icons" data-toggle="tooltip" title="Eliminar Lista de Chequeo" href="{% url 'elimina_lista_chequeo' pk_lc=lstchk.pk %}">delete</a></td>
+                    <td><a class="material-icons md-18" data-toggle="tooltip" title="Eliminar Lista de Chequeo" href="{% url 'elimina_lista_chequeo' pk_lc=lstchk.pk %}">delete</a></td>
                 {% endif %}
             </tr>
             {% endfor %}

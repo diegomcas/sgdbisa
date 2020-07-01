@@ -1,26 +1,18 @@
 {% extends 'template_base.html' %}
 
 {% block contenido %}
-    <h4>Tipos de Chequeo</h4><hr>
+    <h4>Lista de Chequeo {{ lst_chequeo }} </h4><hr>
+    <h6>Tipos de Chequeo incluidos </h6><hr>
     <div class="row">
-        <div class="col-sm-8">
+        <div class="col-sm-12">
             <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Buscar...">
         </div>
-        {% if 'calidad.add_tipochequeo' in g_perms %}
-        <div class="col-sm-4 align-self-center">
-            <a href="{% url 'nuevo_tipo_chequeo' %}" class="btn btn-sm btn-secondary float-md-right">Nuevo Tipo Chequeo</a>
-        </div>
-        {% endif %}
-    </div>
-    <div>
         <table class="table table-hover table-sm" style="font-size: 14px">
             <thead>
                 <tr>
                     <th>Nombre</th>
                     <th>Ayuda</th>
                     {% if 'calidad.view_tipochequeo' in g_perms %}<th> </th>{% endif %}
-                    {% if 'calidad.change_tipochequeo' in g_perms %}<th> </th>{% endif %}
-                    {% if 'calidad.delete_tipochequeo' in g_perms %}<th> </th>{% endif %}
                 </tr>
             </thead>
             <tbody id="tipoChequeoTable">
