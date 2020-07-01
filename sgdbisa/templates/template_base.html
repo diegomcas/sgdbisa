@@ -1,0 +1,57 @@
+{% load static %}
+<html>
+    <head>
+        <meta http-equiv="Expires" content="0">
+        <meta http-equiv="Last-Modified" content="0">
+        <meta http-equiv="Cache-Control" content="no-cache, mustrevalidate">
+        <meta http-equiv="Pragma" content="no-cache">
+        <meta charset="utf-8">
+        <title>BISA. Barbagelata Ingeniería. Gestor de Documentos.</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+        <link rel="stylesheet" href="{% static 'css/bisa.css' %}">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="{% url 'jsi18n' %}" > </script>
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    </head>
+    <!--Menú principal-->
+    <body>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-2 bg-dar">
+                    <nav class="navbar navbar-dark sticky-top">
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a href="{% url 'proyectos' %}" class="nav-link">Proyectos</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'index' %}" class="nav-link">Documentos</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'index' %}" class="nav-link">Archivos</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'listas_chequeo' %}" class="nav-link">Lista de Chequeo</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'tipos_chequeo' %}" class="nav-link">Tipos de Chequeo</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'index' %}" class="nav-link">Busqueda Espacial</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'logout' %}" class="nav-link">Cerrar Sesión</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            
+                <div class="col-sm-10">
+                    {% block contenido %}
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

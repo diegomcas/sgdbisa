@@ -1,0 +1,36 @@
+{% extends 'template_base.html' %}
+{% load static %}
+
+{% block contenido %}
+
+<script type="text/javascript" src="{% static 'admin/js/jquery.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/core.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/SelectBox.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/SelectFilter2.js' %}"></script>
+<h4> Archivo </h4>
+<form method="POST" class="post-form">
+{% csrf_token %}
+<div>
+<input type='file' id='file_selector'>
+{% include 'template_form.html' with form=form %}
+</div>
+
+<div class="float-sm-right pt-4"><button type="submit" class="btn btn-secondary btn-lg">Guardar</button></div>
+</form>
+
+<script>
+    window.onload = function() {
+        document.getElementById("file_selector").onchange = function(event) {
+            var input = event.target;
+
+            var file = input.files[0];
+            input.files
+            var stringDate = file.lastModifiedDate.toJSON();
+            stringDate = stringDate.slice(0, stringDate.lastIndexOf("T"));
+            document.getElementById("id_nombre_archivo").value = file.name;
+            document.getElementById("id_fecha_edicion").value = stringDate;
+        }
+    }
+</script>
+
+{% endblock %}

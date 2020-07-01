@@ -1,0 +1,71 @@
+{% extends 'template_base.html' %}
+
+{% block contenido %}
+    <h4>Listas de Chequeo</h4><hr>
+    <div class="row">
+        <div class="col-sm-8">
+            <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Buscar...">
+        </div>
+        {% if 'calidad.add_listachequeo' in g_perms %}
+        <div class="col-sm-4 align-self-center">
+            <a href="{% url 'nueva_lista_chequeo' %}" class="btn btn-sm btn-secondary float-md-right">Nueva Lista Chequeo</a>
+        </div>
+        {% endif %}
+    </div>
+    <div>
+        <table class="table table-hover table-sm" style="font-size: 14px">
+            <thead>
+                <tr>
+                    <th>Identificación</th>
+                    <th>Area</th>
+                    <th>Tipo de documento</th>
+                    <th>Nombre</th>
+                    {% if 'calidad.view_listachequeo' in g_perms %}<th> </th>{% endif %}
+                    {% if 'calidad.change_listachequeo' in g_perms %}<th> </th>{% endif %}
+                    {% if 'calidad.delete_listachequeo' in g_perms %}<th> </th>{% endif %}
+                </tr>
+            </thead>
+            <tbody id="listaChequeoTable">
+            {% for lstchk in lst_chequeo %}
+            <tr>
+                <td><div data-toggle="tooltip" title="{{ lstchk.descripcion }}">{{ lstchk }}</div></td>
+                <td>{{ lstchk.area }}</td>
+                <td>{{ lstchk.tipo_documento }}</td>
+                <td>{{ lstchk.nombre }}</td>
+                {% if 'calidad.view_listachequeo' in g_perms %}
+                    <td><a class="material-icons" data-toggle="tooltip" title="Ver detalles de la Lista de Chequeo" href="{% url 'ver_lista_chequeo' pk_lc=lstchk.pk %}">visibility</a></td>
+                {% endif %}
+
+                {% if 'calidad.change_listachequeo' in g_perms %}
+                    <td><a class="material-icons" data-toggle="tooltip" title="Editar Lista de Chequeo" href="{% url 'edita_lista_chequeo' pk_lc=lstchk.pk %}">edit</a></td>
+                {% endif %}
+
+                {% if 'calidad.delete_listachequeo' in g_perms %}
+                    <td><a class="material-icons" data-toggle="tooltip" title="Eliminar Lista de Chequeo" href="{% url 'elimina_lista_chequeo' pk_lc=lstchk.pk %}">delete</a></td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <script>
+        function onOff(tableRow) {
+            var value = $("#searchInput").val().toLowerCase();
+            //alert($("#finalized").is(':checked'));
+            if ( (tableRow.text().toLowerCase().indexOf(value) > -1) )
+               { // Mostrar
+                tableRow.show();
+            } else { // No mostrar
+                tableRow.hide();
+            }
+        }
+
+        $(document).ready(function(){
+            $("#searchInput").on("keyup", function() {
+                $("#listaChequeoTable tr").filter(function() {
+                    onOff($(this));
+                });
+            });
+        });
+    </script>
+{% endblock %}

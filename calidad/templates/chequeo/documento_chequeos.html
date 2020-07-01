@@ -1,0 +1,77 @@
+{% extends 'template_base.html' %}
+
+{% block contenido %}
+<h4> Asignar Lista de chequeo a Documento {{ documento }} </h4>
+<form method="POST" class="post-form">{% csrf_token %}
+    <div class="row">
+        <div class="col-sm-10">
+            <input type="text" class="form-control form-control-sm" id="searchList" placeholder="Buscar...">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-10">
+            <select name="listachequeo" class="form-control" id="id_checklist" size="10" multiple>
+                {% for lstchk in listas_chequeo %}
+                <option value="{{ lstchk.pk }}">{{ lstchk }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-sm-2">
+            <button type="submit" class="btn btn-secondary float-md-right">Agregar</button>
+        </div>
+    </div>
+</form>
+<div class="row">
+    <div class="col-sm-12">
+        <input type="text" class="form-control form-control-sm" id="searchChequeo" placeholder="Buscar...">
+    </div>
+</div>
+<div>
+    <table class="table table-hover table-sm" style="font-size: 12px">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Ayuda</th>
+                <th> </th>
+            </tr>
+        </thead>
+        <tbody id="chequeoTable">
+            {% for chk in chequeos_doc %}
+            <tr>
+                <td>{{ chk.tipo_chequeo.nombre }}</td>
+                <td>{{ chk.tipo_chequeo.ayuda }}</td>
+                {% if 'calidad.delete_chequeo' in g_perms %}
+                <td><a class="material-icons" data-toggle="tooltip" title="Quitar chequeo del Documento" href="{% url 'elimina_chequeo' pk_proy=pk_proy pk_doc=documento.pk pk_chk=chk.pk %}">delete</a></td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+    <script>
+        jQuery(document).ready(function($){
+            $("#searchChequeo").on("keyup", function() {
+                var value = $(this).val().toLowerCase();
+                $("#chequeoTable tr").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+
+        jQuery(document).ready(function($) {
+            $('#searchList').on("keyup", function() {
+                var filter = $(this).val().toLowerCase();
+                console.log(filter);
+                $('option').each(function() {
+                    console.log($(this).text());
+                    if ($(this).text().toLowerCase().indexOf(filter) > -1) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                    $('select').val(filter);
+                })
+            })
+        })
+    </script>
+{% endblock %}

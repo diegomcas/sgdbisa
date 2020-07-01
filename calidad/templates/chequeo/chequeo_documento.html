@@ -1,0 +1,49 @@
+{% extends 'template_base.html' %}
+
+{% block contenido %}
+<h4> Control de Claidad del Documento {{ documento }} </h4>
+<form method="POST" class="post-form">{% csrf_token %}
+    <table class="table table-hover table-sm" style="font-size: 12px">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Ayuda</th>
+                <th>Aplica</th>
+                <th>Verificado</th>
+                <th> </th>
+            </tr>
+        </thead>
+        <tbody id="chequeoTable">
+            {% for chk in chequeos_doc %}
+            <tr>
+                <td>{{ chk.tipo_chequeo.nombre }}</td>
+                <td>{{ chk.tipo_chequeo.ayuda }}</td>
+                <td>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="{{ chk.pk }}" name="aplica" value="{{ chk.pk }}" {% if chk.aplica %} checked {% endif %}>
+                    </div>
+                </td>
+                <td>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="{{ chk.pk }}" name="verificado" value="{{ chk.pk }}" {% if chk.verificado %} checked {% endif %}>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <script>
+        $(":checkbox[name='aplica']").on('change', function() {
+            if (! ($(this).is(":checked")) ) {
+                $(this).closest('tr').find(":checkbox[name='verificado']").prop('checked', false);
+            }
+        });
+        $(":checkbox[name='verificado']").on('change', function() {
+            if (! ($(this).closest('tr').find(":checkbox[name='aplica']").is(":checked")) ) {
+                $(this).closest('tr').find(":checkbox[name='verificado']").prop('checked', false);
+            }
+        });
+    </script>
+    <button type="submit" class="btn btn-secondary float-md-right">Aceptar</button>
+</form>
+{% endblock %}

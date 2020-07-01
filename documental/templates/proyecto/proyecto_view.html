@@ -1,0 +1,264 @@
+{% extends 'template_base.html' %}
+
+{% block contenido %}
+<div class="container-fluid">
+    <a href="#detail" data-toggle="collapse"><h4 class="text-body">Detalles del Proyecto OT: {{ pr.orden_trabajo }}</h4></a>
+    <div class="row collapse" id="detail" >
+        <div class="col-sm-8">
+            <hr>
+            <p>{{ pr.orden_trabajo }}<br>
+            <span style="font-size: 10px">Número de Orden de Trabajo</span></p>
+            <hr>
+            
+            <p>{{ pr.descripcion }}<br>
+            <span style="font-size: 10px">Descripción del Trabajo</span></p>
+            <hr>
+        
+            <p>{{ pr.fecha }}<br>
+            <span style="font-size: 10px">Fecha de Inicio</span></p>
+            <hr>
+
+            <p>{{ pr.directorio }}<br>
+            <span style="font-size: 10px">Directorio de Trabajo</span></p>
+            <hr>
+
+            <p>{% if pr.finalizado %} Si {% else %} No {% endif %}<br>
+            <span style="font-size: 10px">Finalizado</span></p>
+            <hr>
+        </div>
+        <div class="col-sm-4">
+            <h6>Miembros del Proyecto</h6>
+            <hr>
+            {% for user in members %}
+            <p>{{ user.0 }}<br>
+            {% for group in user.1 %}
+                <span style="font-size: 10px">{{ group }} </span>
+            {% endfor %}
+            </p><hr>
+            {% endfor %}
+        </div>
+    </div>
+    <br>
+
+    {% comment %} Documentos {% endcomment %}
+
+    <a href="#docDetail" data-toggle="collapse"><h5 class="text-body">Documentos del Proyecto</h5></a>
+    
+    <div class="row collapse" id="docDetail" >
+        <div class="col-sm-6">
+            <input type="text" class="form-control form-control-sm" id="searchInputDoc" placeholder="Buscar...">
+        </div>
+        <div class="col-sm-3">
+            <div class="form-check">
+            <label for="replaceddoc" class="form-check-label">
+            <input type="checkbox" class="form-check-input" id="replaceddoc" checked>
+            Mostrar Reemplazados</label><br>
+            </div>
+        </div>
+        {% if 'documental.add_documento' in g_perms %}
+        <div class="col-sm-3 align-self-center">
+            <a href="{% url 'nuevo_documento' pk_proy=pr.pk %}" class="btn btn-secondary btn-sm float-md-right">Nuevo Documento</a>
+        </div>
+        {% endif %}
+            <div class="col">
+                <table class="table table-hover table-sm" style="font-size: 12px">
+                    <thead>
+                    <tr>
+                        <th>Número</th>
+                        <th>Rev.</th>
+                        <th>Reemp. A</th>
+                        <th>Reemp. Por</th>
+                        <th>Fecha</th>
+                        <th>Tipo Doc.</th>
+                        <th>Obra</th>
+                        <th>Propietario</th>
+                        {% if 'documental.view_documento' in g_perms %}<th> </th>{% endif %}
+                        {% if 'documental.change_documento' in g_perms %}<th> </th>{% endif %}
+                        {% if 'documental.delete_documento' in g_perms %}<th> </th>{% endif %}
+                        {% if 'calidad.add_chequeo' in g_perms %}<th> </th>{% endif %}
+                    </tr>
+                    </thead>
+                    <tbody id="documentsTable">
+                    {% for doc in pr_docs %}
+                    <tr>
+                        <td><div data-toggle="tooltip" title="{{ doc.descripcion }}">{{ doc.numero }}</div></td>
+                        <td>{{ doc.revision }}</td>
+                        {% if doc.reemplaza_a %}
+                            <td>{{ doc.reemplaza_a }}</td>
+                        {% else %}
+                            <td>...</td>
+                        {% endif %}
+                        {% if doc.reemplazado_por %}
+                            <td class="doc_replaced">{{ doc.reemplazado_por }}</td>
+                        {% else %}
+                            <td class="doc_replaced">...</td>
+                        {% endif %}
+                        <td>{{ doc.fecha }}</td>
+                        <td>{{ doc.tipo_documento }}</td>
+                        <td>{{ doc.tipo_obra }}</td>
+                        <td>{{ doc.propietario }}</td>
+                        {% if 'documental.view_documento' in g_perms %}<td><a class="material-icons md-18" data-toggle="tooltip" title="ver datos del Documento" href="{% url 'ver_documento' pk_proy=pr.pk pk_doc=doc.pk %}">visibility</a></td>{% endif %}
+                        {% if 'documental.change_documento' in g_perms %}<td><a class="material-icons md-18" data-toggle="tooltip" title="Editar datos del Documento" href="{% url 'edita_documento' pk_proy=pr.pk pk_doc=doc.pk %}">edit</a></td>{% endif %}
+                        {% comment %} {% if 'documental.revision_documento' in g_perms %}
+                            {% if doc.is_replaced %}
+                            <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión.">file_copy</i></td>
+                            {% else %}
+                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Crear una revisión del Documento" href="{% url 'revision_documento' pk_proy=pr.pk pk_doc=doc.pk %}">file_copy</a></td>
+                            {% endif %}
+                        {% endif %} {% endcomment %}
+                        {% if 'documental.delete_documento' in g_perms %}<td><a class="material-icons md-18" data-toggle="tooltip" title="Eliminar el Documento" href="{% url 'elimina_documento' pk_proy=pr.pk pk_doc=doc.pk %}">delete</a></td>{% endif %}
+                        {% if 'calidad.add_chequeo' in g_perms %}
+                            {% if doc.is_replaced %}
+                            <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión.">playlist_add_check</i></td>
+                            {% else %}
+                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Asignar Chequeos al Documento" href="{% url 'agrega_chequeo' pk_proy=pr.pk pk_doc=doc.pk %}">playlist_add_check</a></td>
+                            {% endif %}
+                        {% endif %}
+                        {% if 'calidad.change_chequeo' in g_perms %}
+                            {% if doc.is_replaced %}
+                            <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión.">done_all</i></td>
+                            {% else %}
+                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Verificar el Documento" href="{% url 'hace_chequeo' pk_proy=pr.pk pk_doc=doc.pk %}">done_all</a></td>
+                            {% endif %}
+                        {% endif %}
+                        {% comment %} <td><a class="material-icons md-18" data-toggle="tooltip" title="Verificar el Documento" href="{% url 'hace_chequeo' pk_proy=pr.pk pk_doc=doc.pk %}">place</a></td> {% endcomment %}
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        
+    </div>
+
+    {% comment %} Archivos {% endcomment %}
+
+    <a href="#fileDetail" data-toggle="collapse"><h5 class="text-body">Archivos del Proyecto</h5></a>
+    <div class="row collapse" id="fileDetail" >
+        <div class="col-sm-6">
+            <input type="text" class="form-control form-control-sm" id="searchInputFile" placeholder="Buscar...">
+        </div>
+        <div class="col-sm-3">
+            <div class="form-check">
+            <label for="replacedfile" class="form-check-label">
+            <input type="checkbox" class="form-check-input" id="replacedfile" checked>
+            Mostrar Reemplazados</label><br>
+            </div>
+        </div>
+        {% if 'documental.add_archivo' in g_perms %}
+        <div class="col-sm-3 align-self-center">
+            <a href="{% url 'nuevo_archivo' pk_proy=pr.pk %}" class="btn btn-secondary btn-sm float-md-right">Nuevo Archivo</a>
+        </div>
+        {% endif %}
+            <div class="col">
+                <table class="table table-hover table-sm" style="font-size: 12px">
+                    <thead><tr>
+                        <th>Nombre</th>
+                        <th>Rev.</th>
+                        <th>Reemp. a</th>
+                        <th>Reemp. por</th>
+                        <th>Fecha Edic.</th>
+                        <th>Directorio</th>
+                        <th>Propietario</th>
+                        <th>Repr.</th>
+                        {% if 'documental.view_archivo' in g_perms %}<th> </th>{% endif %}
+                        {% if 'documental.change_archivo' in g_perms %}<th> </th>{% endif %}
+                        {% if 'documental.delete_archivo' in g_perms %}<th> </th>{% endif %}
+                    </tr></thead>
+                    <tbody id="filesTable">
+                    {% for file in pr_files %}
+                        <tr>
+                            <td><div data-toggle="tooltip" title="{{ file.descripcion }}">{{ file.nombre_archivo }}</div></td>
+                            <td>{{ file.revision }}</td>
+                            {% if file.reemplaza_a %}
+                                <td>{{ file.reemplaza_a }}</td>
+                            {% else %}
+                                <td>...</td>
+                            {% endif %}
+                            {% if file.reemplazado_por %}
+                                <td class="file_replaced">{{ file.reemplazado_por }}</td>
+                            {% else %}
+                                <td class="file_replaced">...</td>
+                            {% endif %}
+                            <td>{{ file.fecha_edicion }}</td>
+                            <td>{{ file.directorio }}</td>
+                            <td>{{ file.propietario }}</td>
+                            <td>{{ file.tipo_representacion }}</td>
+                            {% if 'documental.view_archivo' in g_perms %}
+                                <td><a class="material-icons md-18" data-toggle="tooltip" title="Ver detalles del Archivo" href="{% url 'ver_archivo' pk_proy=pr.pk pk_file=file.pk %}">visibility</a></td>
+                            {% endif %}
+
+                            {% if 'documental.change_archivo' in g_perms %}
+                                <td><a class="material-icons md-18" data-toggle="tooltip" title="Editar Archivo" href="{% url 'edita_archivo' pk_proy=pr.pk pk_file=file.pk %}">edit</a></td>
+                            {% endif %}
+
+                            {% if 'documental.delete_archivo' in g_perms %}
+                                <td><a class="material-icons md-18" data-toggle="tooltip" title="Eliminar Archivo" href="{% url 'elimina_archivo' pk_proy=pr.pk pk_file=file.pk %}">delete</a></td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+    </div>
+
+    <script>
+        function onOffDoc(tableRow) {
+            var value = $("#searchInputDoc").val().toLowerCase();
+            if ( (tableRow.text().toLowerCase().indexOf(value) > -1) &&
+                    ( (tableRow.contents().filter("td.doc_replaced").text() === '...') ||
+                      ($("#replaceddoc").is(':checked'))
+                    )
+               ) { // Mostrar
+                tableRow.show();
+            } else { // No mostrar
+                tableRow.hide();
+            }
+        }
+
+        $(document).ready(function(){
+            $("#searchInputDoc").on("keyup", function() {
+                $("#documentsTable tr").filter(function() {
+                    onOffDoc($(this));
+                });
+            });
+        });
+
+        $(document).ready(function(){
+            $("#replaceddoc").on("click", function() {
+                $("#documentsTable tr").filter(function() {
+                    onOffDoc($(this));
+                });
+            });
+        });
+
+        function onOffFile(tableRow) {
+            var value = $("#searchInputFile").val().toLowerCase();
+            if ( (tableRow.text().toLowerCase().indexOf(value) > -1) &&
+                    ( (tableRow.contents().filter("td.file_replaced").text() === '...') ||
+                      ($("#replacedfile").is(':checked'))
+                    )
+               ) { // Mostrar
+                tableRow.show();
+            } else { // No mostrar
+                tableRow.hide();
+            }
+        }
+
+        $(document).ready(function(){
+            $("#searchInputFile").on("keyup", function() {
+                $("#filesTable tr").filter(function() {
+                    onOffFile($(this));
+                });
+            });
+        });
+
+        $(document).ready(function(){
+            $("#replacedfile").on("click", function() {
+                $("#filesTable tr").filter(function() {
+                    onOffFile($(this));
+                });
+            });
+        });
+    </script>
+</div>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends 'template_base.html' %}
+
+{% block contenido %}
+    <h4>Proyectos</h4><hr>
+    <div class="row">
+        <div class="col-sm-8">
+            <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Buscar...">
+        </div>
+        <div class="col-sm-2">
+            <input type="checkbox" class="form-check-input" id="finalized" checked>
+            <label for="finalized" class="form-check-label" style="font-size: 12px">Mostrar Terminados</label><br>
+        </div>
+        {% if 'documental.add_proyecto' in g_perms %}
+        <div class="col-sm-2 align-self-center">
+            <a href="{% url 'nuevo_proyecto' %}" class="btn btn-sm btn-secondary float-md-right">Nuevo Proyecto</a>
+        </div>
+        {% endif %}
+    </div>
+    <div>
+        <table class="table table-hover table-sm" style="font-size: 14px">
+            <thead>
+                <tr>
+                    <th>Orden de Trabajo</th>
+                    <th>Fecha</th>
+                    <th>Directorio</th>
+                    <th>Finalizado</th>
+                    {% if 'documental.view_proyecto' in g_perms %}<th> </th>{% endif %}
+                    {% if 'documental.change_proyecto' in g_perms %}<th> </th>{% endif %}
+                    {% if 'documental.finalize_proyecto' in g_perms %}<th> </th>{% endif %}
+                </tr>
+            </thead>
+            <tbody id="projectsTable">
+            {% for pr in proyectos %}
+            <tr>
+                <td>{{ pr.orden_trabajo }}</td>
+                <td>{{ pr.fecha }}</td>
+                <td>{{ pr.directorio }}</td>
+                {% if pr.finalizado %}
+                    <td class="fin">Si</td>
+                {% else %}
+                    <td class="fin">No</td>
+                {% endif %}
+                {% if 'documental.view_proyecto' in g_perms %}
+                    <td><a class="material-icons" data-toggle="tooltip" title="Ver detalles del Proyecto" href="{% url 'ver_proyecto' primary_key=pr.pk %}">visibility</a></td>
+                {% endif %}
+
+                {% if 'documental.change_proyecto' in g_perms %}
+                    <td><a class="material-icons" data-toggle="tooltip" title="Editar Proyecto" href="{% url 'edita_proyecto' primary_key=pr.pk %}">edit</a></td>
+                {% endif %}
+
+                {% if 'documental.finalize_proyecto' in g_perms %}
+                    <td><a class="material-icons" data-toggle="tooltip" title="Finalizar Proyecto" href="{% url 'finalizar_proyecto' primary_key=pr.pk %}">check_box</a></td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <script>
+        function onOff(tableRow) {
+            var value = $("#searchInput").val().toLowerCase();
+            //alert($("#finalized").is(':checked'));
+            if ( (tableRow.text().toLowerCase().indexOf(value) > -1) &&
+                    (
+                        (tableRow.contents().filter("td.fin").text() === 'No') ||
+                        ($("#finalized").is(':checked'))
+                    )
+               ) { // Mostrar
+                tableRow.show();
+            } else { // No mostrar
+                tableRow.hide();
+            }
+        }
+
+        $(document).ready(function(){
+            $("#searchInput").on("keyup", function() {
+                $("#projectsTable tr").filter(function() {
+                    onOff($(this));
+                });
+            });
+        });
+
+        $(document).ready(function(){
+            $("#finalized").on("click", function() {
+                $("#projectsTable tr").filter(function() {
+                    onOff($(this));
+                });
+            });
+        });
+    </script>
+{% endblock %}
