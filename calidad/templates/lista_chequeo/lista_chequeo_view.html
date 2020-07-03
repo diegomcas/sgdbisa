@@ -1,59 +1,64 @@
 {% extends 'template_base.html' %}
 
 {% block contenido %}
+<div class="container-fluid">
     <h4>Lista de Chequeo {{ lst_chequeo }} </h4><hr>
-    <h6>Tipos de Chequeo incluidos </h6><hr>
+    <p>{{ lst_chequeo.descripcion }}</p>
+    <h6>Tipos de Chequeo incluidos </h6>
     <div class="row">
         <div class="col-sm-12">
             <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Buscar...">
         </div>
-        <table class="table table-hover table-sm" style="font-size: 14px">
-            <thead>
+        <div class="col">
+            <table class="table table-hover table-sm" style="font-size: 12px">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Ayuda</th>
+                        {% if 'calidad.view_tipochequeo' in g_perms %}<th> </th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody id="tipoChequeoTable">
+                {% for tipo in lst_chequeo.tipos_chequeo.all %}
                 <tr>
-                    <th>Nombre</th>
-                    <th>Ayuda</th>
-                    {% if 'calidad.view_tipochequeo' in g_perms %}<th> </th>{% endif %}
+                    <td>{{ tipo.nombre }}</td>
+                    <td>{{ tipo.ayuda }}</td>
+                    {% if 'calidad.view_tipochequeo' in g_perms %}
+                        <td><a class="material-icons md-18" data-toggle="tooltip" title="Ver detalles del Tipo de Chequeo" href="{% url 'ver_tipo_chequeo' pk_tc=tipo.pk %}">visibility</a></td>
+                    {% endif %}
+
+                    {% if 'calidad.change_tipochequeo' in g_perms %}
+                        <td><a class="material-icons md-18" data-toggle="tooltip" title="Editar Tipo de Chequeo" href="{% url 'edita_tipo_chequeo' pk_tc=tipo.pk %}">edit</a></td>
+                    {% endif %}
+
+                    {% if 'calidad.delete_tipochequeo' in g_perms %}
+                        <td><a class="material-icons md-18" data-toggle="tooltip" title="Quitar Tipo de Chequeo de la Lista" href="{% url 'elimina_tipo_chequeo' pk_tc=tipo.pk %}">delete</a></td>
+                    {% endif %}
                 </tr>
-            </thead>
-            <tbody id="tipoChequeoTable">
-            {% for tipo in tipos_chequeo %}
-            <tr>
-                <td>{{ tipo.nombre }}</td>
-                <td>{{ tipo.ayuda }}</td>
-                {% if 'calidad.view_tipochequeo' in g_perms %}
-                    <td><a class="material-icons md-18" data-toggle="tooltip" title="Ver detalles del Tipo de Chequeo" href="{% url 'ver_tipo_chequeo' pk_tc=tipo.pk %}">visibility</a></td>
-                {% endif %}
-
-                {% if 'calidad.change_tipochequeo' in g_perms %}
-                    <td><a class="material-icons md-18" data-toggle="tooltip" title="Editar Tipo de Chequeo" href="{% url 'edita_tipo_chequeo' pk_tc=tipo.pk %}">edit</a></td>
-                {% endif %}
-
-                {% if 'calidad.delete_tipochequeo' in g_perms %}
-                    <td><a class="material-icons md-18" data-toggle="tooltip" title="Eliminar Tipo de Chequeo" href="{% url 'elimina_tipo_chequeo' pk_tc=tipo.pk %}">check_box</a></td>
-                {% endif %}
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-    <script>
-        function onOff(tableRow) {
-            var value = $("#searchInput").val().toLowerCase();
-            //alert($("#finalized").is(':checked'));
-            if ( (tableRow.text().toLowerCase().indexOf(value) > -1) )
-               { // Mostrar
-                tableRow.show();
-            } else { // No mostrar
-                tableRow.hide();
-            }
+</div>
+<script>
+    function onOff(tableRow) {
+        var value = $("#searchInput").val().toLowerCase();
+        //alert($("#finalized").is(':checked'));
+        if ( (tableRow.text().toLowerCase().indexOf(value) > -1) )
+            { // Mostrar
+            tableRow.show();
+        } else { // No mostrar
+            tableRow.hide();
         }
+    }
 
-        $(document).ready(function(){
-            $("#searchInput").on("keyup", function() {
-                $("#tipoChequeoTable tr").filter(function() {
-                    onOff($(this));
-                });
+    $(document).ready(function(){
+        $("#searchInput").on("keyup", function() {
+            $("#tipoChequeoTable tr").filter(function() {
+                onOff($(this));
             });
         });
-    </script>
+    });
+</script>
 {% endblock %}

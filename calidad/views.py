@@ -34,13 +34,13 @@ def ver_lista_chequeo(request, pk_lc):
     Muestra una lista de chequeo y los chequeos que contiene
     """
     lst_chequeo = get_object_or_404(ListaChequeo, pk=pk_lc)
-    tipos_chequeo = lst_chequeo.tipos_chequeo.all()
+    # tipos_chequeo = lst_chequeo.tipos_chequeo.all()
     return render(
         request,
         'lista_chequeo_view.html',
         {
             'lst_chequeo': lst_chequeo,
-            'tipos_chequeo': tipos_chequeo,
+            # 'tipos_chequeo': tipos_chequeo,
             'g_perms': request.user.get_all_permissions()
         }
     )
@@ -86,10 +86,33 @@ def edita_lista_chequeo(request, pk_lc):
 
 @user_passes_test(delete_lista_chequeo)
 @login_required
-def elimina_lista_chequeo(request):
+def elimina_lista_chequeo(request, pk_lc):
     """
     Elimina una lista de chequeo
+    Solo elimina la lista, no los tipos que incluye
     """
+    lista_chequeo = get_object_or_404(ListaChequeo, pk=pk_lc)
+
+    if request.method == "POST":
+        acepta = (request.POST.get('acepta'))
+        if acepta == 'LISTA':
+            lista_chequeo.delete()
+        if acepta == 'TODO':
+            for tipo_chequeo in lista_chequeo.tipos_chequeo.all():
+                if tipo_chequeo.tipo_chequeo.all().count() == 0:
+                    tipo_chequeo.delete()
+                    lista_chequeo.delete()
+
+        return redirect('listas_chequeo')
+
+    return render(
+        request,
+        'lista_chequeo_delete.html',
+        {
+            'lista_chequeo': lista_chequeo,
+            'g_perms': request.user.get_all_permissions()
+        }
+    )
 
 
 @user_passes_test(list_tipos_chequeo)
@@ -115,16 +138,13 @@ def ver_tipo_chequeo(request, pk_tc):
     """
     Muestra la información completa de un tipo de chequeo
     """
-    # print(request.META['referer'])
-    print(request.headers['referer'])
+    # print(request.headers['referer'])
     tipo_chequeo = get_object_or_404(TipoChequeo, pk=pk_tc)
-    chequeos = Chequeo.objects.filter(tipo_chequeo__pk=pk_tc)
     return render(
         request,
         'tipo_chequeo_view.html',
         {
             'tipo_chequeo': tipo_chequeo,
-            'chequeos': chequeos,
             'g_perms': request.user.get_all_permissions()
         }
     )
@@ -172,8 +192,25 @@ def edita_tipo_chequeo(request, pk_tc):
 @login_required
 def elimina_tipo_chequeo(request, pk_tc):
     """
-    Elimina un tipo de chequeo
+    Elimina un tipo de chequeo solo si no está referenciado por un Chequeo
     """
+    tipo_chequeo = get_object_or_404(TipoChequeo, pk=pk_tc)
+
+    if request.method == "POST":
+        acepta = request.POST.get('acepta')
+        if acepta == 'SI':
+            tipo_chequeo.delete()
+
+        return redirect('tipos_chequeo')
+
+    return render(
+        request,
+        'tipo_chequeo_delete.html',
+        {
+            'tipo_chequeo': tipo_chequeo,
+            'g_perms': request.user.get_all_permissions()
+        }
+    )
 
 
 @user_passes_test(add_chequeo)
@@ -184,7 +221,8 @@ def agrega_chequeo(request, pk_proy, pk_doc):
     """
     doc = get_object_or_404(Documento, pk=pk_doc)
     listas_chequeo = ListaChequeo.objects.all()
-    chequeos_doc = Chequeo.objects.filter(documento__pk=pk_doc)
+    chequeos_doc = doc.chequeo_documento.all()
+    # chequeos_doc = Chequeo.objects.filter(documento__pk=pk_doc)
 
     if request.method == "POST":
         id_listas_chequeo_sel = request.POST.getlist('listachequeo', '')
@@ -227,7 +265,8 @@ def hace_chequeo(request, pk_proy, pk_doc):
     Realiza el control de calidad de un documento a partir de sus chequeos
     """
     doc = get_object_or_404(Documento, pk=pk_proy)
-    chequeos_doc = Chequeo.objects.filter(documento__pk=pk_doc).order_by('tipo_chequeo')
+    chequeos_doc = doc.chequeo_documento.all().order_by('tipo_chequeo')
+    # chequeos_doc = Chequeo.objects.filter(documento__pk=pk_doc).order_by('tipo_chequeo')
 
     if request.method == "POST":
         verificados = request.POST.getlist('verificado')

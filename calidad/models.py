@@ -34,7 +34,7 @@ class ListaChequeo(models.Model):
     tipos_chequeo = models.ManyToManyField(
         'TipoChequeo',
         blank=True,
-        related_name='tipos_chequeo',
+        related_name='listachequeo_tipos_chequeo',
         help_text="Verificación a realizar"
     )
 
@@ -94,14 +94,14 @@ class Chequeo(models.Model):
     )
     documento = models.ForeignKey(
         'documental.Documento',
-        related_name='documento',
+        related_name='chequeo_documento',
         default=0,
         on_delete=models.CASCADE,
         help_text="Documento al que pertenece el check"
     )
     tipo_chequeo = models.ForeignKey(
         'TipoChequeo',
-        related_name='tipo_chequeo',
+        related_name='chequeo_tipo_chequeo',
         on_delete=models.DO_NOTHING,
         help_text="Verificación a realizar"
     )

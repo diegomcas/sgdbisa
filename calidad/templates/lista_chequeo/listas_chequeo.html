@@ -1,6 +1,7 @@
 {% extends 'template_base.html' %}
 
 {% block contenido %}
+<div class="container-fluid">
     <h4>Listas de Chequeo</h4><hr>
     <div class="row">
         <div class="col-sm-8">
@@ -13,7 +14,7 @@
         {% endif %}
     </div>
     <div>
-        <table class="table table-hover table-sm" style="font-size: 14px">
+        <table class="table table-hover table-sm" style="font-size: 12px">
             <thead>
                 <tr>
                     <th>Identificación</th>
@@ -48,24 +49,25 @@
             </tbody>
         </table>
     </div>
-    <script>
-        function onOff(tableRow) {
-            var value = $("#searchInput").val().toLowerCase();
-            //alert($("#finalized").is(':checked'));
-            if ( (tableRow.text().toLowerCase().indexOf(value) > -1) )
-               { // Mostrar
-                tableRow.show();
-            } else { // No mostrar
-                tableRow.hide();
-            }
+</div>
+<script>
+    function onOff(tableRow) {
+        var value = $("#searchInput").val().toLowerCase();
+        //alert($("#finalized").is(':checked'));
+        if ( (tableRow.text().toLowerCase().indexOf(value) > -1) )
+            { // Mostrar
+            tableRow.show();
+        } else { // No mostrar
+            tableRow.hide();
         }
+    }
 
-        $(document).ready(function(){
-            $("#searchInput").on("keyup", function() {
-                $("#listaChequeoTable tr").filter(function() {
-                    onOff($(this));
-                });
+    $(document).ready(function(){
+        $("#searchInput").on("keyup", function() {
+            $("#listaChequeoTable tr").filter(function() {
+                onOff($(this));
             });
         });
-    </script>
+    });
+</script>
 {% endblock %}

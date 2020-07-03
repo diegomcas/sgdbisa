@@ -1,0 +1,32 @@
+{% extends 'template_base.html' %}
+
+{% block contenido %}
+<div class="container-fluid">
+    <h4>Detalles del Documento {{archivo}}</h4><hr>
+    <dl>
+        <dt>Directorio del archivo:</dt>
+        <dd>- {{ archivo.directorio }}</dd>
+        <dt>Nombre del archivo:</dt>
+        <dd>- {{ archivo.nombre_archivo }}</dd>
+        <dt>Última edición:</dt>
+        <dd>- {{ archivo.fecha_edicion }}</dd>
+        <dt>Pertenece al proyecto (Orden de Trabajo):</dt>
+        <dd>- {{ archivo.proyecto }}</dd>
+        <dt>Propietario:</dt>
+        <dd>- {{ archivo.propietario }}</dd>
+        {% if archivo.reemplaza_a %}
+        <dt>Reemplaza al archivo:</dt>
+        <dd>- {{ archivo.reemplaza_a }}</dd>
+        {% endif %}
+        {% if archivo.is_replace %}
+        <dt>Reemplaza al documento:</dt>
+        <dd>- {{ archivo.archivo_reemplazado_por }}</dd>
+        {% endif %}
+        {% if archivo.archivos.all.count > 0 %}
+        <dt>Documentos que compone:</dt>
+        {% for archivo in archivo.archivos.all %}
+        <dd>- {{ archivo }}</dd>
+        {% endfor %}
+        {% endif %}
+    </dl>
+{% endblock %}

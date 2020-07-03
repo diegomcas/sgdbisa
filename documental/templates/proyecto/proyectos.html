@@ -1,6 +1,7 @@
 {% extends 'template_base.html' %}
 
 {% block contenido %}
+<div class="container-fluid">
     <h4>Proyectos</h4><hr>
     <div class="row">
         <div class="col-sm-8">
@@ -17,7 +18,7 @@
         {% endif %}
     </div>
     <div>
-        <table class="table table-hover table-sm" style="font-size: 14px">
+        <table class="table table-hover table-sm" style="font-size: 12px">
             <thead>
                 <tr>
                     <th>Orden de Trabajo</th>
@@ -41,21 +42,22 @@
                     <td class="fin">No</td>
                 {% endif %}
                 {% if 'documental.view_proyecto' in g_perms %}
-                    <td><a class="material-icons" data-toggle="tooltip" title="Ver detalles del Proyecto" href="{% url 'ver_proyecto' primary_key=pr.pk %}">visibility</a></td>
+                    <td><a class="material-icons md-18" data-toggle="tooltip" title="Ver detalles del Proyecto" href="{% url 'ver_proyecto' primary_key=pr.pk %}">visibility</a></td>
                 {% endif %}
 
                 {% if 'documental.change_proyecto' in g_perms %}
-                    <td><a class="material-icons" data-toggle="tooltip" title="Editar Proyecto" href="{% url 'edita_proyecto' primary_key=pr.pk %}">edit</a></td>
+                    <td><a class="material-icons md-18" data-toggle="tooltip" title="Editar Proyecto" href="{% url 'edita_proyecto' primary_key=pr.pk %}">edit</a></td>
                 {% endif %}
 
                 {% if 'documental.finalize_proyecto' in g_perms %}
-                    <td><a class="material-icons" data-toggle="tooltip" title="Finalizar Proyecto" href="{% url 'finalizar_proyecto' primary_key=pr.pk %}">check_box</a></td>
+                    <td><a class="material-icons md-18" data-toggle="tooltip" title="Finalizar Proyecto" href="{% url 'finalizar_proyecto' primary_key=pr.pk %}">check_box</a></td>
                 {% endif %}
             </tr>
             {% endfor %}
             </tbody>
         </table>
     </div>
+</div>
     <script>
         function onOff(tableRow) {
             var value = $("#searchInput").val().toLowerCase();

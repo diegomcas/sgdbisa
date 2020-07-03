@@ -3,13 +3,54 @@
 {% block contenido %}
 <div class="container-fluid">
     <h4>Tipo de Chequeo "{{ tipo_chequeo }}" </h4><hr>
-    <h5>Documentos que lo utilizan</h5>
-    <div class="row">
+    <p> {{ tipo_chequeo.ayuda }} </p>
+    <a href="#lista" data-toggle="collapse"><h5 class="text-body">Listas de Chequeo a las que pertenece</h5></a>
+    <div class="row collapse" id="lista" >
+        <div class="col-sm-12">
+            <input type="text" class="form-control form-control-sm" id="searchInputLista" placeholder="Buscar...">
+        </div>
+        <div class="col">
+            <table class="table table-hover table-sm" style="font-size: 12px">
+                <thead>
+                    <tr>
+                        <th>Identificación</th>
+                        <th>Area</th>
+                        <th>Tipo de documento</th>
+                        <th>Nombre</th>
+                        {% if 'calidad.view_listachequeo' in g_perms %}<th> </th>{% endif %}
+                        {% if 'calidad.change_listachequeo' in g_perms %}<th> </th>{% endif %}
+                        {% if 'calidad.delete_listachequeo' in g_perms %}<th> </th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody id="listaTable">
+                {% for lstchk in tipo_chequeo.listachequeo_tipos_chequeo.all %}
+                    <tr>
+                        <td><div data-toggle="tooltip" title="{{ lstchk.descripcion }}">{{ lstchk }}</div></td>
+                        <td>{{ lstchk.area }}</td>
+                        <td>{{ lstchk.tipo_documento }}</td>
+                        <td>{{ lstchk.nombre }}</td>
+                        {% if 'calidad.view_listachequeo' in g_perms %}
+                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Ver detalles de la Lista de Chequeo" href="{% url 'ver_lista_chequeo' pk_lc=lstchk.pk %}">visibility</a></td>
+                        {% endif %}
+
+                        {% if 'calidad.change_listachequeo' in g_perms %}
+                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Editar Lista de Chequeo" href="{% url 'edita_lista_chequeo' pk_lc=lstchk.pk %}">edit</a></td>
+                        {% endif %}
+
+                        {% if 'calidad.delete_listachequeo' in g_perms %}
+                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Eliminar Lista de Chequeo" href="{% url 'elimina_lista_chequeo' pk_lc=lstchk.pk %}">delete</a></td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <a href="#docs" data-toggle="collapse"><h5 class="text-body">Documentos que lo utilizan</h5></a>
+    <div class="row collapse" id="docs" >
         <div class="col-sm-12">
             <input type="text" class="form-control form-control-sm" id="searchInputDoc" placeholder="Buscar...">
         </div>
-    </div>
-    <div class="row">
         <div class="col">
             <table class="table table-hover table-sm" style="font-size: 12px">
                 <thead>
@@ -27,32 +68,21 @@
                 </tr>
                 </thead>
                 <tbody id="documentsTable">
-                {% for chk in chequeos %}
-                {% if not chk.documento.reemplazado_por %}
+                {% for chk in tipo_chequeo.chequeo_tipo_chequeo.all %}
+                {% if not chk.documento.is_replace %}
                 <tr>
                     <td><div data-toggle="tooltip" title="{{ chk.documento.proyecto.descripcion }}">{{ chk.documento.proyecto }}</div></td>
                     <td><div data-toggle="tooltip" title="{{ chk.documento.descripcion }}">{{ chk.documento }}</div></td>
                     <td>{{ chk.documento.propietario }}</td>
-                    {% if chk.aplica %}
-                        <td>SI</td>
+                    <td>{{ chk.aplica|yesno:"SI,NO,..." }}</td>
+                    <td>{{ chk.verificado|yesno:"SI,NO,..." }}</td>
+                    {% if chk.verificado_por %}
+                        <td>{{ chk.verificado_por }}</td>
                     {% else %}
-                        <td>NO</td>
+                        <td>...</td>
                     {% endif %}
-                    {% if chk.verificado %}
-                        <td>SI</td>
-                    {% else %}
-                        <td>NO</td>
-                    {% endif %}
-                    <td>{{ chk.verificado_por }}</td>
                     {% if 'documental.view_documento' in g_perms %}<td><a class="material-icons md-18" data-toggle="tooltip" title="ver datos del Documento" href="{% url 'ver_documento' pk_proy=chk.documento.proyecto.pk pk_doc=chk.documento.pk %}">visibility</a></td>{% endif %}
                     {% if 'documental.change_documento' in g_perms %}<td><a class="material-icons md-18" data-toggle="tooltip" title="Editar datos del Documento" href="{% url 'edita_documento' pk_proy=chk.documento.proyecto.pk pk_doc=chk.documento.pk %}">edit</a></td>{% endif %}
-                    {% comment %} {% if 'documental.revision_documento' in g_perms %}
-                        {% if doc.is_replaced %}
-                        <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión.">file_copy</i></td>
-                        {% else %}
-                        <td><a class="material-icons md-18" data-toggle="tooltip" title="Crear una revisión del Documento" href="{% url 'revision_documento' pk_proy=pr.pk pk_doc=doc.pk %}">file_copy</a></td>
-                        {% endif %}
-                    {% endif %} {% endcomment %}
                     {% if 'documental.delete_documento' in g_perms %}<td><a class="material-icons md-18" data-toggle="tooltip" title="Eliminar el Documento" href="{% url 'elimina_documento' pk_proy=chk.documento.proyecto.pk pk_doc=chk.documento.pk %}">delete</a></td>{% endif %}
                     {% if 'calidad.add_chequeo' in g_perms %}
                         <td><a class="material-icons md-18" data-toggle="tooltip" title="Asignar Chequeos al Documento" href="{% url 'agrega_chequeo' pk_proy=chk.documento.proyecto.pk pk_doc=chk.documento.pk %}">playlist_add_check</a></td>
@@ -70,8 +100,7 @@
     </div>
 </div>
 <script>
-    function onOffDoc(tableRow) {
-        var value = $("#searchInputDoc").val().toLowerCase();
+    function onOffDoc(tableRow, value) {
         if (tableRow.text().toLowerCase().indexOf(value) > -1) {
             // Mostrar
             tableRow.show();
@@ -81,9 +110,16 @@
     }
 
     $(document).ready(function(){
+        $("#searchInputLista").on("keyup", function() {
+            $("#listaTable tr").filter(function() {
+                onOffDoc($(this), $("#searchInputLista").val().toLowerCase());
+            });
+        });
+    });
+    $(document).ready(function(){
         $("#searchInputDoc").on("keyup", function() {
             $("#documentsTable tr").filter(function() {
-                onOffDoc($(this));
+                onOffDoc($(this), $("#searchInputDoc").val().toLowerCase());
             });
         });
     });

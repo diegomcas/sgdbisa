@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import Proyecto, Documento, Archivo
+from calidad.models import Chequeo
 from .forms import ProyectoForm, DocumentoForm, ArchivoForm
 from .test_perms import list_proyectos, finalize_proyecto, view_proyecto, add_proyecto, update_proyecto
 from .test_perms import list_documentos, view_documento, add_documento, update_documento
@@ -53,39 +54,13 @@ def ver_proyecto(request, primary_key):
     Muestra información del proyecto 'primary_key'
     y los documentos relacionados.
     """
-    proj = get_object_or_404(Proyecto, pk=primary_key)
-    proj_docs = Documento.objects.filter(proyecto__id__exact=int(primary_key))
-    proj_files = Archivo.objects.filter(proyecto__id__exact=int(primary_key))
-    proj_members = proj.miembros.all()
-
-    # Armar lista de usuarios y grupos del proyecto
-    # (
-    #   (usuario1
-    #     (Grupo1, Grupo2, GrupoN)
-    #   )
-    #   (usuario2
-    #     (Grupo1, Grupo2, GrupoN)
-    #   )
-    # )
-    members = []
-    for member in proj_members:
-        groups = member.groups.all()
-        lst_tmp = [member.username]
-        lst_grp = []
-        for group in groups:
-            lst_grp.append(group.name)
-
-        lst_tmp.append(lst_grp)
-        members.append(lst_tmp)
+    proyecto = get_object_or_404(Proyecto, pk=primary_key)
 
     return render(
         request,
         'proyecto_view.html',
         {
-            'pr': proj,
-            'members': members,
-            'pr_docs': proj_docs,
-            'pr_files': proj_files,
+            'proyecto': proyecto,
             'g_perms': request.user.get_all_permissions()
         }
     )
@@ -105,7 +80,11 @@ def nuevo_proyecto(request):
     else:
         form = ProyectoForm()
 
-    return render(request, 'proyecto.html', {'form': form})
+    return render(
+        request,
+        'proyecto.html',
+        {'form': form}
+    )
 
 
 @user_passes_test(update_proyecto)
@@ -124,7 +103,11 @@ def edita_proyecto(request, primary_key):
     else:
         form = ProyectoForm(instance=proj)
 
-    return render(request, 'proyecto.html', {'form': form})
+    return render(
+        request,
+        'proyecto.html',
+        {'form': form}
+    )
 
 
 @user_passes_test(view_documento)
@@ -133,6 +116,16 @@ def ver_documento(request, pk_proy, pk_doc):
     """
     Ver el documento 'pk_doc' preteneciente al proyecto 'pk_proy'
     """
+    documento = get_object_or_404(Documento, pk=pk_doc)
+
+    return render(
+        request,
+        'documento_view.html',
+        {
+            'documento': documento,
+            'g_perms': request.user.get_all_permissions()
+        }
+    )
 
 
 @user_passes_test(add_documento)
@@ -153,7 +146,11 @@ def nuevo_documento(request, pk_proy):
     else:
         form = DocumentoForm(project)
 
-    return render(request, 'documento.html', {'form': form})
+    return render(
+        request,
+        'documento.html',
+        {'form': form}
+    )
 
 
 @user_passes_test(update_documento)
@@ -173,7 +170,11 @@ def edita_documento(request, pk_proy, pk_doc):
     else:
         form = DocumentoForm(proj, instance=doc)
 
-    return render(request, 'documento.html', {'form': form})
+    return render(
+        request,
+        'documento.html',
+        {'form': form}
+    )
 
 
 @user_passes_test(revision_documento)
@@ -210,10 +211,20 @@ def archivos(request, pk_proy):
 
 @user_passes_test(view_archivo)
 @login_required
-def ver_archivo(request, pk_proy):
+def ver_archivo(request, pk_proy, pk_file):
     """
     Presenta toda la información de un archivo.
     """
+    archivo = get_object_or_404(Archivo, pk=pk_file)
+
+    return render(
+        request,
+        'archivo_view.html',
+        {
+            'archivo': archivo,
+            'g_perms': request.user.get_all_permissions()
+        }
+    )
 
 
 @user_passes_test(add_archivo)

@@ -2,37 +2,37 @@
 
 {% block contenido %}
 <div class="container-fluid">
-    <a href="#detail" data-toggle="collapse"><h4 class="text-body">Detalles del Proyecto OT: {{ pr.orden_trabajo }}</h4></a>
+    <a href="#detail" data-toggle="collapse"><h4 class="text-body">Detalles del Proyecto OT: {{ proyecto.orden_trabajo }}</h4></a>
     <div class="row collapse" id="detail" >
         <div class="col-sm-8">
             <hr>
-            <p>{{ pr.orden_trabajo }}<br>
+            <p>{{ proyecto.orden_trabajo }}<br>
             <span style="font-size: 10px">Número de Orden de Trabajo</span></p>
             <hr>
             
-            <p>{{ pr.descripcion }}<br>
+            <p>{{ proyecto.descripcion }}<br>
             <span style="font-size: 10px">Descripción del Trabajo</span></p>
             <hr>
         
-            <p>{{ pr.fecha }}<br>
+            <p>{{ proyecto.fecha }}<br>
             <span style="font-size: 10px">Fecha de Inicio</span></p>
             <hr>
 
-            <p>{{ pr.directorio }}<br>
+            <p>{{ proyecto.directorio }}<br>
             <span style="font-size: 10px">Directorio de Trabajo</span></p>
             <hr>
 
-            <p>{% if pr.finalizado %} Si {% else %} No {% endif %}<br>
+            <p>{% if proyecto.finalizado %} Si {% else %} No {% endif %}<br>
             <span style="font-size: 10px">Finalizado</span></p>
             <hr>
         </div>
         <div class="col-sm-4">
             <h6>Miembros del Proyecto</h6>
             <hr>
-            {% for user in members %}
-            <p>{{ user.0 }}<br>
-            {% for group in user.1 %}
-                <span style="font-size: 10px">{{ group }} </span>
+            {% for user in proyecto.miembros.all %}
+            <p>{{ user.username }}<br>
+            {% for group in user.groups.all %}
+                <span style="font-size: 10px">{{ group.name }} </span>
             {% endfor %}
             </p><hr>
             {% endfor %}
@@ -57,7 +57,7 @@
         </div>
         {% if 'documental.add_documento' in g_perms %}
         <div class="col-sm-3 align-self-center">
-            <a href="{% url 'nuevo_documento' pk_proy=pr.pk %}" class="btn btn-secondary btn-sm float-md-right">Nuevo Documento</a>
+            <a href="{% url 'nuevo_documento' pk_proy=proyecto.pk %}" class="btn btn-secondary btn-sm float-md-right">Nuevo Documento</a>
         </div>
         {% endif %}
             <div class="col">
@@ -79,7 +79,7 @@
                     </tr>
                     </thead>
                     <tbody id="documentsTable">
-                    {% for doc in pr_docs %}
+                    {% for doc in proyecto.documentos_proyecto.all %}
                     <tr>
                         <td><div data-toggle="tooltip" title="{{ doc.descripcion }}">{{ doc.numero }}</div></td>
                         <td>{{ doc.revision }}</td>
@@ -88,8 +88,8 @@
                         {% else %}
                             <td>...</td>
                         {% endif %}
-                        {% if doc.reemplazado_por %}
-                            <td class="doc_replaced">{{ doc.reemplazado_por }}</td>
+                        {% if doc.is_replaced %}
+                            <td class="doc_replaced">{{ doc.documento_reemplazado_por }}</td>
                         {% else %}
                             <td class="doc_replaced">...</td>
                         {% endif %}
@@ -97,31 +97,31 @@
                         <td>{{ doc.tipo_documento }}</td>
                         <td>{{ doc.tipo_obra }}</td>
                         <td>{{ doc.propietario }}</td>
-                        {% if 'documental.view_documento' in g_perms %}<td><a class="material-icons md-18" data-toggle="tooltip" title="ver datos del Documento" href="{% url 'ver_documento' pk_proy=pr.pk pk_doc=doc.pk %}">visibility</a></td>{% endif %}
-                        {% if 'documental.change_documento' in g_perms %}<td><a class="material-icons md-18" data-toggle="tooltip" title="Editar datos del Documento" href="{% url 'edita_documento' pk_proy=pr.pk pk_doc=doc.pk %}">edit</a></td>{% endif %}
+                        {% if 'documental.view_documento' in g_perms %}<td><a class="material-icons md-18" data-toggle="tooltip" title="ver datos del Documento" href="{% url 'ver_documento' pk_proy=proyecto.pk pk_doc=doc.pk %}">visibility</a></td>{% endif %}
+                        {% if 'documental.change_documento' in g_perms %}<td><a class="material-icons md-18" data-toggle="tooltip" title="Editar datos del Documento" href="{% url 'edita_documento' pk_proy=proyecto.pk pk_doc=doc.pk %}">edit</a></td>{% endif %}
                         {% comment %} {% if 'documental.revision_documento' in g_perms %}
                             {% if doc.is_replaced %}
                             <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión.">file_copy</i></td>
                             {% else %}
-                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Crear una revisión del Documento" href="{% url 'revision_documento' pk_proy=pr.pk pk_doc=doc.pk %}">file_copy</a></td>
+                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Crear una revisión del Documento" href="{% url 'revision_documento' pk_proy=proyecto.pk pk_doc=doc.pk %}">file_copy</a></td>
                             {% endif %}
                         {% endif %} {% endcomment %}
-                        {% if 'documental.delete_documento' in g_perms %}<td><a class="material-icons md-18" data-toggle="tooltip" title="Eliminar el Documento" href="{% url 'elimina_documento' pk_proy=pr.pk pk_doc=doc.pk %}">delete</a></td>{% endif %}
+                        {% if 'documental.delete_documento' in g_perms %}<td><a class="material-icons md-18" data-toggle="tooltip" title="Eliminar el Documento" href="{% url 'elimina_documento' pk_proy=proyecto.pk pk_doc=doc.pk %}">delete</a></td>{% endif %}
                         {% if 'calidad.add_chequeo' in g_perms %}
                             {% if doc.is_replaced %}
                             <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión.">playlist_add_check</i></td>
                             {% else %}
-                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Asignar Chequeos al Documento" href="{% url 'agrega_chequeo' pk_proy=pr.pk pk_doc=doc.pk %}">playlist_add_check</a></td>
+                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Asignar Chequeos al Documento" href="{% url 'agrega_chequeo' pk_proy=proyecto.pk pk_doc=doc.pk %}">playlist_add_check</a></td>
                             {% endif %}
                         {% endif %}
                         {% if 'calidad.change_chequeo' in g_perms %}
                             {% if doc.is_replaced %}
                             <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión.">done_all</i></td>
                             {% else %}
-                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Verificar el Documento" href="{% url 'hace_chequeo' pk_proy=pr.pk pk_doc=doc.pk %}">done_all</a></td>
+                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Verificar el Documento" href="{% url 'hace_chequeo' pk_proy=proyecto.pk pk_doc=doc.pk %}">done_all</a></td>
                             {% endif %}
                         {% endif %}
-                        {% comment %} <td><a class="material-icons md-18" data-toggle="tooltip" title="Verificar el Documento" href="{% url 'hace_chequeo' pk_proy=pr.pk pk_doc=doc.pk %}">place</a></td> {% endcomment %}
+                        {% comment %} <td><a class="material-icons md-18" data-toggle="tooltip" title="Verificar el Documento" href="{% url 'hace_chequeo' pk_proy=proyecto.pk pk_doc=doc.pk %}">place</a></td> {% endcomment %}
                     </tr>
                     {% endfor %}
                     </tbody>
@@ -146,7 +146,7 @@
         </div>
         {% if 'documental.add_archivo' in g_perms %}
         <div class="col-sm-3 align-self-center">
-            <a href="{% url 'nuevo_archivo' pk_proy=pr.pk %}" class="btn btn-secondary btn-sm float-md-right">Nuevo Archivo</a>
+            <a href="{% url 'nuevo_archivo' pk_proy=proyecto.pk %}" class="btn btn-secondary btn-sm float-md-right">Nuevo Archivo</a>
         </div>
         {% endif %}
             <div class="col">
@@ -165,7 +165,7 @@
                         {% if 'documental.delete_archivo' in g_perms %}<th> </th>{% endif %}
                     </tr></thead>
                     <tbody id="filesTable">
-                    {% for file in pr_files %}
+                    {% for file in proyecto.archivos_proyecto.all %}
                         <tr>
                             <td><div data-toggle="tooltip" title="{{ file.descripcion }}">{{ file.nombre_archivo }}</div></td>
                             <td>{{ file.revision }}</td>
@@ -174,8 +174,8 @@
                             {% else %}
                                 <td>...</td>
                             {% endif %}
-                            {% if file.reemplazado_por %}
-                                <td class="file_replaced">{{ file.reemplazado_por }}</td>
+                            {% if file.is_replaced %}
+                                <td class="file_replaced">{{ file.archivo_reemplazado_por }}</td>
                             {% else %}
                                 <td class="file_replaced">...</td>
                             {% endif %}
@@ -184,15 +184,15 @@
                             <td>{{ file.propietario }}</td>
                             <td>{{ file.tipo_representacion }}</td>
                             {% if 'documental.view_archivo' in g_perms %}
-                                <td><a class="material-icons md-18" data-toggle="tooltip" title="Ver detalles del Archivo" href="{% url 'ver_archivo' pk_proy=pr.pk pk_file=file.pk %}">visibility</a></td>
+                                <td><a class="material-icons md-18" data-toggle="tooltip" title="Ver detalles del Archivo" href="{% url 'ver_archivo' pk_proy=proyecto.pk pk_file=file.pk %}">visibility</a></td>
                             {% endif %}
 
                             {% if 'documental.change_archivo' in g_perms %}
-                                <td><a class="material-icons md-18" data-toggle="tooltip" title="Editar Archivo" href="{% url 'edita_archivo' pk_proy=pr.pk pk_file=file.pk %}">edit</a></td>
+                                <td><a class="material-icons md-18" data-toggle="tooltip" title="Editar Archivo" href="{% url 'edita_archivo' pk_proy=proyecto.pk pk_file=file.pk %}">edit</a></td>
                             {% endif %}
 
                             {% if 'documental.delete_archivo' in g_perms %}
-                                <td><a class="material-icons md-18" data-toggle="tooltip" title="Eliminar Archivo" href="{% url 'elimina_archivo' pk_proy=pr.pk pk_file=file.pk %}">delete</a></td>
+                                <td><a class="material-icons md-18" data-toggle="tooltip" title="Eliminar Archivo" href="{% url 'elimina_archivo' pk_proy=proyecto.pk pk_file=file.pk %}">delete</a></td>
                             {% endif %}
                         </tr>
                         {% endfor %}

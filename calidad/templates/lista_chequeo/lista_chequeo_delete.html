@@ -1,0 +1,34 @@
+{% extends 'template_base.html' %}
+
+{% block contenido %}
+<div class="container-fluid">
+    <h4> Eliminar Lista de Chequeo {{ lista_chequeo }} </h4>
+    <h5> Tipos de Chequeo incluidos: </h5><hr>
+    <dl>
+    {% for tipo_chequeo in lista_chequeo.tipos_chequeo.all %}
+        <dt>{{ tipo_chequeo }}</dt>
+        {% if tipo_chequeo.tipo_chequeo.all.count > 0 %}
+        <dd> Documentos que lo utilizan:
+        {% for chequeo in tipo_chequeo.tipo_chequeo.all %}
+            {{ chequeo.documento }},
+        {% endfor %}
+        </dd>
+        {% endif %}
+        <hr>
+    {% endfor %}
+    </dl>
+    
+    <form method="POST" class="post-form">{% csrf_token %}
+    <div class="row">
+        <div class="col">
+            <h5>Que desea eliminar?</h5>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2"><button type="submit" name='acepta' value='LISTA' class="btn btn-sm btn-secondary float-md-center">Solo la lista</button></div>
+        <div class="col-sm-5"><button type="submit" name='acepta' value='TODO' class="btn btn-sm btn-secondary float-md-center">La Lista y los Tipos de Chequeo no utilizados</button></div>
+        <div class="col-sm-2"><button type="submit" name='acepta' value='NADA' class="btn btn-sm btn-secondary float-md-center">Nada</button></div>
+    </div>
+    </form>
+</div>
+{% endblock %}

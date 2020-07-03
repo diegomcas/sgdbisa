@@ -1,6 +1,7 @@
 {% extends 'template_base.html' %}
 
 {% block contenido %}
+<div class="container-fluid">
     <h4>Tipos de Chequeo</h4><hr>
     <div class="row">
         <div class="col-sm-8">
@@ -13,7 +14,7 @@
         {% endif %}
     </div>
     <div>
-        <table class="table table-hover table-sm" style="font-size: 14px">
+        <table class="table table-hover table-sm" style="font-size: 12px">
             <thead>
                 <tr>
                     <th>Nombre</th>
@@ -37,31 +38,32 @@
                 {% endif %}
 
                 {% if 'calidad.delete_tipochequeo' in g_perms %}
-                    <td><a class="material-icons md-18" data-toggle="tooltip" title="Eliminar Tipo de Chequeo" href="{% url 'elimina_tipo_chequeo' pk_tc=tipo.pk %}">check_box</a></td>
+                    <td><a class="material-icons md-18" data-toggle="tooltip" title="Eliminar Tipo de Chequeo" href="{% url 'elimina_tipo_chequeo' pk_tc=tipo.pk %}">delete</a></td>
                 {% endif %}
             </tr>
             {% endfor %}
             </tbody>
         </table>
     </div>
-    <script>
-        function onOff(tableRow) {
-            var value = $("#searchInput").val().toLowerCase();
-            //alert($("#finalized").is(':checked'));
-            if ( (tableRow.text().toLowerCase().indexOf(value) > -1) )
-               { // Mostrar
-                tableRow.show();
-            } else { // No mostrar
-                tableRow.hide();
-            }
+</div>
+<script>
+    function onOff(tableRow) {
+        var value = $("#searchInput").val().toLowerCase();
+        //alert($("#finalized").is(':checked'));
+        if ( (tableRow.text().toLowerCase().indexOf(value) > -1) )
+            { // Mostrar
+            tableRow.show();
+        } else { // No mostrar
+            tableRow.hide();
         }
+    }
 
-        $(document).ready(function(){
-            $("#searchInput").on("keyup", function() {
-                $("#tipoChequeoTable tr").filter(function() {
-                    onOff($(this));
-                });
+    $(document).ready(function(){
+        $("#searchInput").on("keyup", function() {
+            $("#tipoChequeoTable tr").filter(function() {
+                onOff($(this));
             });
         });
-    </script>
+    });
+</script>
 {% endblock %}

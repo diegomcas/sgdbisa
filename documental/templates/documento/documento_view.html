@@ -1,0 +1,44 @@
+{% extends 'template_base.html' %}
+
+{% block contenido %}
+<div class="container-fluid">
+    <h4>Detalles del Documento {{documento}}</h4><hr>
+    <dl>
+        <dt>Pertenece al proyecto:</dt>
+        <dd>- {{ documento.proyecto }}</dd>
+        <dt>Propietario:</dt>
+        <dd>- {{ documento.propietario }}</dd>
+        {% if documento.refiere_a.all.count > 0 %}
+        <dt>El documento refiere a los documentos:</dt>
+        {% for doc in documento.refiere_a.all %}
+        <dd>- {{ doc }}</dd>
+        {% endfor %}
+        {% endif %}
+        {% if documento.documentos_refiere_a.all.count > 0 %}
+        <dt>El documento es referido por los documentos:</dt>
+        {% for doc in documento.documentos_refiere_a.all %}
+        <dd>- {{ doc }}</dd>
+        {% endfor %}
+        {% endif %}
+        {% if documento.reemplaza_a %}
+        <dt>Reemplaza al documento:</dt>
+        <dd>- {{ documento.reemplaza_a }}</dd>
+        {% endif %}
+        {% if documento.is_replaced %}
+        <dt>Reemplaza al documento:</dt>
+        <dd>- {{ documento.documento_reemplazado_por }}</dd>
+        {% endif %}
+        {% if documento.compuesto_por.all.count > 0 %}
+        <dt>Archivos que lo componen:</dt>
+        {% for archivo in documento.compuesto_por.all %}
+        <dd>- {{ archivo }}</dd>
+        {% endfor %}
+        {% endif %}
+        <dt>Estado de verificación:</dt>
+        {% for chequeo in documento.documento.all %}
+        {% if chequeo.aplica %}
+        <dd>- {{ chequeo }} / Verificado: {{ chequeo.verificado|yesno:"Si,No,No" }} </dd>
+        {% endif %}
+        {% endfor %}
+    </dl>
+{% endblock %}

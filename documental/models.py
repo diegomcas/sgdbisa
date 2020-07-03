@@ -113,6 +113,7 @@ class Documento(models.Model):
     )
     proyecto = models.ForeignKey(
         'Proyecto',
+        related_name='documentos_proyecto',
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
@@ -120,26 +121,27 @@ class Documento(models.Model):
     )
     reemplaza_a = models.ForeignKey(
         'self',
-        related_name='%(class)s_reemplaza_a',
+        related_name='documento_reemplazado_por',
         default=None,
         blank=True,
         null=True,
         on_delete=models.CASCADE,
         help_text="Documento al cual revisiona"
     )
-    reemplazado_por = models.ForeignKey(
-        'self',
-        related_name='%(class)s_reemplazado_por',
-        default=None,
-        blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
-        help_text="Documento por el cual es revisionado"
-    )
+    # reemplazado_por = models.ForeignKey(
+    #     'self',
+    #     related_name='docreemplazado_por',
+    #     default=None,
+    #     blank=True,
+    #     null=True,
+    #     on_delete=models.SET_NULL,
+    #     help_text="Documento por el cual es revisionado"
+    # )
     refiere_a = models.ManyToManyField(
         'self',
         blank=True,
-        related_name='%(class)s_refiere_a',
+        related_name='documentos_refiere_a',
+        symmetrical=False,
         help_text="Documentos a los que hace referencia este Documento"
     )
     compuesto_por = models.ManyToManyField(
@@ -228,7 +230,7 @@ class Documento(models.Model):
         """
         Retorna True si el Documento fue reemplazado
         """
-        return self.reemplazado_por is not None
+        return self.documento_reemplazado_por is None
 
     def is_replaces_to(self):
         """
@@ -301,24 +303,25 @@ class Archivo(models.Model):
     )
     reemplaza_a = models.ForeignKey(
         'self',
-        related_name='%(class)s_reemplaza_a',
+        related_name='archivo_reemplazado_por',
         default=None,
         blank=True,
         null=True,
         on_delete=models.CASCADE,
         help_text="Archivo al cual revisiona"
     )
-    reemplazado_por = models.ForeignKey(
-        'self',
-        related_name='%(class)s_reemplazado_por',
-        default=None,
-        blank=True,
-        null=True,
-        on_delete=models.CASCADE,
-        help_text="Archivo por el cual es revisionado"
-    )
+    # reemplazado_por = models.ForeignKey(
+    #     'self',
+    #     related_name='%(class)s_reemplazado_por',
+    #     default=None,
+    #     blank=True,
+    #     null=True,
+    #     on_delete=models.CASCADE,
+    #     help_text="Archivo por el cual es revisionado"
+    # )
     proyecto = models.ForeignKey(
         'Proyecto',
+        related_name='archivos_proyecto',
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
@@ -356,3 +359,9 @@ class Archivo(models.Model):
         (p. ej. en el sitio de Administración)
         """
         return self.nombre_archivo + ' (' + self.revision + ')'
+
+    def is_replaced(self):
+        """
+        Retorna True si el Archivo fue reemplazado
+        """
+        return self.archivo_reemplazado_por is None

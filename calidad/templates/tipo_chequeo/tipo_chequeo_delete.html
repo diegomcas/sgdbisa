@@ -1,0 +1,23 @@
+{% extends 'template_base.html' %}
+
+{% block contenido %}
+<div class="container-fluid">
+    <h4>Eliminar Tipo de Chequeo "{{ tipo_chequeo }}" </h4><hr>
+    {% if tipo_chequeo.chequeo_tipo_chequeo.all.count > 0 %}
+    <dl>
+    <dt>El tipo de chequeo no puede eliminarse puesto que se ocupa en los siguientes documentos: </dt>
+    {% for chequeo in tipo_chequeo.chequeo_tipo_chequeo.all %}
+    <dd>-{{ chequeo.documento }}</dd>
+    {% endfor %}
+    <dl>
+    <form method="POST" class="post-form">{% csrf_token %}
+    <button type="submit" name='acepta' value='NONE' class="btn btn-sm btn-secondary">Volver</button>
+    </form>
+    {% else %}
+    <form method="POST" class="post-form">{% csrf_token %}
+    <button type="submit" name='acepta' value='SI' class="btn btn-sm btn-secondary">Borrar</button>
+    <button type="submit" name='acepta' value='NO' class="btn btn-sm btn-secondary">No Borrar</button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}
