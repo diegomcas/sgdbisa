@@ -76,6 +76,8 @@
                         {% if 'documental.change_documento' in g_perms %}<th> </th>{% endif %}
                         {% if 'documental.delete_documento' in g_perms %}<th> </th>{% endif %}
                         {% if 'calidad.add_chequeo' in g_perms %}<th> </th>{% endif %}
+                        {% if 'espacial.add_elementoespacial' in g_perms %}<th> </th>{% endif %}
+                        {% if 'espacial.view_elementoespacial' in g_perms %}<th> </th>{% endif %}
                     </tr>
                     </thead>
                     <tbody id="documentsTable">
@@ -121,6 +123,16 @@
                             <td><a class="material-icons md-18" data-toggle="tooltip" title="Verificar el Documento" href="{% url 'hace_chequeo' pk_proy=proyecto.pk pk_doc=doc.pk %}">done_all</a></td>
                             {% endif %}
                         {% endif %}
+                        {% if 'espacial.add_elementoespacial' in g_perms %}
+                        <td><a class="material-icons md-18" data-toggle="tooltip" title="Georreferenciar Documento" href="{% url 'espacial' pk_object=doc.pk obj='documento' %}">add_location</a></td>
+                        {% endif %}
+                        {% if 'espacial.view_elementoespacial' in g_perms %}
+                        {% if doc.espacial.all.count > 0 %}
+                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Visualizar ubicación Documento" href="{% url 'mapping' pk_object=doc.pk obj='documento' %}">map</a></td>
+                        {% else %}
+                            <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="Visualizar ubicación Documento">map</i></td>
+                        {% endif %}
+                        {% endif %}
                         {% comment %} <td><a class="material-icons md-18" data-toggle="tooltip" title="Verificar el Documento" href="{% url 'hace_chequeo' pk_proy=proyecto.pk pk_doc=doc.pk %}">place</a></td> {% endcomment %}
                     </tr>
                     {% endfor %}
@@ -163,6 +175,8 @@
                         {% if 'documental.view_archivo' in g_perms %}<th> </th>{% endif %}
                         {% if 'documental.change_archivo' in g_perms %}<th> </th>{% endif %}
                         {% if 'documental.delete_archivo' in g_perms %}<th> </th>{% endif %}
+                        {% if 'espacial.add_elementoespacial' in g_perms %}<th> </th>{% endif %}
+                        {% if 'espacial.view_elementoespacial' in g_perms %}<th> </th>{% endif %}
                     </tr></thead>
                     <tbody id="filesTable">
                     {% for file in proyecto.archivos_proyecto.all %}
@@ -193,6 +207,14 @@
 
                             {% if 'documental.delete_archivo' in g_perms %}
                                 <td><a class="material-icons md-18" data-toggle="tooltip" title="Eliminar Archivo" href="{% url 'elimina_archivo' pk_proy=proyecto.pk pk_file=file.pk %}">delete</a></td>
+                            {% endif %}
+                            {% if 'espacial.add_elementoespacial' in g_perms %}<td><a class="material-icons md-18" data-toggle="tooltip" title="Georreferenciar Documento" href="{% url 'espacial' pk_object=file.pk obj='archivo' %}">add_location</a></td>{% endif %}
+                            {% if 'espacial.view_elementoespacial' in g_perms %}
+                            {% if file.espacial.all.count > 0 %}
+                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Visualizar ubicación Archivo" href="{% url 'mapping' pk_object=file.pk obj='archivo' %}">map</a></td>
+                            {% else %}
+                            <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="Visualizar ubicación Archivo">map</i></td>
+                            {% endif %}
                             {% endif %}
                         </tr>
                         {% endfor %}

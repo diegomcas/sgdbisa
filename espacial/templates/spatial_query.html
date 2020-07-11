@@ -1,0 +1,105 @@
+{% extends 'template_base.html' %}
+{% load static %}
+
+{% block contenido %}
+
+{% comment %} <script type="text/javascript" src="{% static 'admin/js/jquery.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/core.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/SelectBox.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/SelectFilter2.js' %}"></script> {% endcomment %}
+<div class="container-fluid">
+    <h4> Busqueda Espacial </h4>
+    <form method="GET">{% csrf_token %}
+    <div class="row">
+
+            <div class="form-group">
+                <label for="srid">Seleccione el SRID de los datos entrados:</label>
+                <div class="row">
+                    <div class="col-sm-11">
+                        <input type="text" class="form-control form-control-sm" id="searchFilter" placeholder="Filtro">
+                    </div>
+                    <div class="col-sm-1">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="filter()">Filtrar</button>
+                    </div>
+                </div>
+                    <select class="form-control" id="srid" name="srid_list" size="10">
+                    {% for srid in srids %}
+                        <option value="{{ srid.srid }}"> {{ srid.definicion }}, datum= {{ srid.datum }}, srid={{ srid.srid }} </option>
+                    {% endfor %}
+                </select>
+            </div>
+    </div>
+    <div class="row">
+        <label for="coordenadas">Coordenadas de referenica (Latitud Longitud o Coordenada y x):</label>
+        <input type="text" step="any" class="form-control" id="coordenadas" placeholder="Latitud o coordenada y" name="coordenadas">
+    </div>
+     <br>
+    <div class="row">
+        <p>Entidades a buscar</p>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="form-check">
+                <label class="form-check-label" for="docs">
+                    <input type="radio" class="form-check-input" id="docs" name="objeto" value="documento" checked>Documentos
+                </label>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-check">
+                <label class="form-check-label" for="arch">
+                    <input type="radio" class="form-check-input" id="arch" name="objeto" value="archivo">Archivos
+                </label>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-check">
+                <label class="form-check-label" for="todo">
+                    <input type="radio" class="form-check-input" id="todo" name="objeto" value="todo">Documentos y Archivos
+                </label>
+            </div>
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <p>Tipo de búsqueda</p>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="form-check">
+                <label class="form-check-label" for="distance">
+                    <input type="radio" class="form-check-input" id="distance" name="tipo" value="distancia" checked>Distancia
+                </label>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-check">
+                <label class="form-check-label" for="contains">
+                    <input type="radio" class="form-check-input" id="contains" name="tipo" value="contiene">Contiene
+                </label>
+            </div>
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <label for="distancia">Distancia en Kilómetros:</label>
+        <input type="number" step="0.1" class="form-control" id="ditancia" placeholder="Ingrese la distancia en Kilómetros" name="distancia">
+    </div>
+
+    <div class="float-sm-right pt-4"><button type="submit" class="btn btn-secondary btn-lg">Buscar</button></div>
+    </form>
+</div>
+<script>
+    function filter() {
+        var filter = $("#searchFilter").val().toLowerCase();
+        $('#srid option').each(function() {
+            //console.log($('#srid option').text());
+            if ($(this).text().toLowerCase().indexOf(filter) > -1) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        })
+    }
+</script>
+{% endblock %}

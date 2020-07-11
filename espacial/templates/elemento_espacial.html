@@ -1,0 +1,69 @@
+{% extends 'template_base.html' %}
+{% load static %}
+
+{% block contenido %}
+
+<div class="container-fluid">
+    <h4> Elemento Espacial </h4>
+    <form method="POST" class="post-form">{% csrf_token %}
+    <div class="form-group">
+        <label for="srid">Seleccione el SRID de los datos entrados:</label>
+        {% if error.0 is not None %}
+            <p class="text-danger"> {{ error.0 }} </p>
+        {% endif %}
+        <div class="row">
+            <div class="col-sm-11">
+                <input type="text" class="form-control form-control-sm" id="searchFilter" placeholder="Filtro">
+            </div>
+            <div class="col-sm-1">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="filter()">Filtrar</button>
+            </div>
+        </div>
+        <select class="form-control" id="srid" name="srid_list" size="10">
+        {% for srid in srids %}
+            <option value="{{ srid.srid }}" {% if srid.srid == prev_def.1 %} selected {% endif %}> {{ srid.definicion }}, datum= {{ srid.datum }}, srid={{ srid.srid }} </option>
+        {% endfor %}
+        </select>
+        <label for="tipo_elemento">Tipo elemento espacial a cargar:</label>
+        <select class="form-control" id="tipo_elemento" name="tipo_elemento">
+        {% for tipo in tipo_elemento %}
+            <option value="{{ tipo.0 }}" {% if tipo.0 == prev_def.0 %} selected {% endif %}>{{ tipo.1 }}</option>
+        {% endfor %}
+        </select>
+        {% if error.1 is not None %}
+            <p class="text-danger"> {{ error.1 }} </p>
+        {% endif %}
+        {% if error.2 is not None %}
+            <p class="text-danger"> {{ error.2 }} </p>
+        {% endif %}
+        <label for="wkt">Valores de las coordenadas:</label>
+        <textarea class="form-control" rows="15" id="wkt" name="wkt_espacial"
+        placeholder="Ejemplo de ingreso de datos en coordenadas geográficas (Latitud Longitud):
+-31.556766 -60.730098 <opcional para puntos: Atributo del punto>
+-31.556784 -60.729983 <opcional para puntos: Atributo del punto>
+-31.556998 -60.730054 <opcional para puntos: Atributo del punto>
+-31.556979 -60.730163 <opcional para puntos: Atributo del punto>
+Ejemplo de ingreso de datos en coordenadas Posgar (Faja 5) (Norte(Y) Este(X)):
+6509029.8519 5430680.2088 <opcional para puntos: Atributo del punto>
+6509027.9288 5430691.1412 <opcional para puntos: Atributo del punto>
+6509004.1548 5430684.5581 <opcional para puntos: Atributo del punto>
+6509006.1926 5430674.1947 <opcional para puntos: Atributo del punto>
+">{% if prev_def.2 is not None %}{{ prev_def.2 }}{% endif %}
+</textarea>
+    <div class="float-sm-right pt-4"><button type="submit" class="btn btn-secondary btn-lg">Guardar</button></div>
+    </form>
+</div>
+<script>
+    function filter() {
+        var filter = $("#searchFilter").val().toLowerCase();
+        $('#srid option').each(function() {
+            //console.log($('#srid option').text());
+            if ($(this).text().toLowerCase().indexOf(filter) > -1) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        })
+    }
+</script>
+{% endblock %}

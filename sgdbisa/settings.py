@@ -37,9 +37,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
     'usuarios.apps.UsuariosConfig',
     'documental.apps.DocumentalConfig',
     'calidad.apps.CalidadConfig',
+    'espacial.apps.EspacialConfig',
 
     'django_extensions',
     'widget_tweaks',
@@ -86,16 +88,17 @@ WSGI_APPLICATION = 'sgdbisa.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
+# 'django.db.backends.postgresql',
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'sgdbisa',
         'USER': 'sgdbisauser',
         'PASSWORD': 'THPrNr13ToP',
         'HOST': '127.0.0.1',
         'PORT': '5432',
-    }
+    },
 }
 
 

@@ -1,7 +1,9 @@
 from string import ascii_uppercase
 from django.db import models
+# from django.contrib.gis.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from espacial.models import ElementoEspacial
 
 
 class Proyecto(models.Model):
@@ -149,6 +151,12 @@ class Documento(models.Model):
         blank=True,
         related_name='archivos',
         help_text="Archivos que componen el Documento"
+    )
+    espacial = models.ManyToManyField(
+        'espacial.ElementoEspacial',
+        blank=True,
+        related_name='espacialesdoc',
+        help_text="Ubicación espacial del documento"
     )
 
     class Meta:
@@ -336,6 +344,12 @@ class Archivo(models.Model):
     hash_archivo = models.IntegerField(
         default=None,
         null=True,
+    )
+    espacial = models.ManyToManyField(
+        'espacial.ElementoEspacial',
+        blank=True,
+        related_name='espacialesfile',
+        help_text="Ubicación espacial del archivo"
     )
 
     class Meta:
