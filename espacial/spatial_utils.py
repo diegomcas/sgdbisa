@@ -1,0 +1,219 @@
+from django.contrib.gis.geos import GeometryCollection
+from django.db.models import Q
+from documental.models import Proyecto, Documento, Archivo
+
+class JsLayer:
+    """
+    Genera las capas de Leaflet a partir de objetos:
+    - Proyecto/s
+    - Documento/s
+    - Archivos
+    """
+    def __init__(self, objects):
+        self.objects = objects
+        self.total_geom = GeometryCollection()
+        self.leaflet_dict = {}
+
+    def pru(self, lst_docs_layers, lst_files_layers):
+        dic_docs_node = {
+            'label': 'Documentos',
+            'selectAllCheckbox': 'true',
+            'children': lst_docs_layers
+        }
+
+        dic_files_node = {
+            'label': 'Archivos',
+            'selectAllCheckbox': 'true',
+            'children': lst_files_layers
+        }
+
+        lst_project_childrens = [
+            dic_docs_node,
+            dic_files_node
+        ]
+
+        project_format = {
+            'label': '',
+            'selectAllCheckbox': 'true',
+            'children': lst_project_childrens
+        }
+
+        print(project_format)
+
+    def make_layers(self):
+        layers_docs = None
+        layers_files = None
+
+        # qsp = Proyecto.objects.get(pk=1).documentos_proyecto.filter(~Q(espacial=None))
+
+        if type(self.objects) == Proyecto:
+            # Childrens son Documentos y Archivos pero Documentos sin Archivos referidos
+            docs = self.objects.documentos_proyecto.all()
+            for doc in docs:
+                layer_doc = self.document2layers(doc)
+                if layer_doc is not None:
+                    if layers_docs is not None:
+                        layers_docs.append(layer_doc)
+                    else:
+                        layers_docs = []
+                        layers_docs.append(layer_doc)
+
+            files = self.objects.archivos_proyecto.all()
+            for file in files:
+                layer_file = self.archivo2layer(file)
+                if layer_file is not None:
+                    if layers_files is not None:
+                        layers_files.append(layer_file)
+                    else:
+                        layers_files = []
+                        layers_files.append(layer_file)
+
+            if (layers_docs is not None) or (layers_files is not None):
+                self.leaflet_dict = self.object_node(self.objects)
+                if layers_docs is not None:
+                    doc_node = self.generic_node('Documentos')
+                    doc_node['children'] = [layers_docs]
+                    self.leaflet_dict['children'] = [doc_node]
+                if layers_files is not None:
+                    file_node = self.generic_node('Archivos')
+                    file_node['children'] = [layers_files]
+                    self.leaflet_dict['children'] = [file_node]
+
+        if type(self.objects) == Documento:
+            layer_doc = self.document2layers(self.objects, True)
+            if layer_doc is not None:
+                proyecto = self.objects.proyecto.get()
+                self.leaflet_dict = self.object_node(proyecto)
+                self.leaflet_dict['children'] = [layer_doc]
+
+        if type(self.objects) == Archivo:
+            layer_file = self.document2layers(self.objects)
+            if layer_file is not None:
+                proyecto = self.objects.proyecto.get()
+                self.leaflet_dict = self.object_node(proyecto)
+                self.leaflet_dict['children'] = [layer_file]
+
+        if '.QuerySet' in str(type(self.objects)):
+            # recorrer objetos espaciales
+            # crear un nodo por proyecto (OJO!!!)
+            # crear un nodo por tipo de objeto (Archivo o Documento)
+            pass
+
+    def object_node(self, object):
+        obj_name = str(type(object)).split('.').pop().replace('\'>', '')
+        object_node = {
+            'label': f'"{obj_name}: {object}"',
+            'selectAllCheckbox': 'true',
+            'children': []
+        }
+
+        return object_node
+
+    def generic_node(self, title):
+        generic_node = {
+            'label': f'"{title}"',
+            'selectAllCheckbox': 'true',
+            'children': []
+        }
+
+        return generic_node
+
+    def ee2layer(self, ee, title):
+        if ee[0].tipo_elemento == 'PL':
+            desc = f'{title} (Polígono)'
+            return self.polygon2layer(ee[0], desc)
+        elif ee[0].tipo_elemento == 'LN':
+            desc = f'{title} (Línea)'
+            return self.line2layer(ee[0], desc)
+        elif ee[0].tipo_elemento == 'PT':
+            desc = f'{title} (Puntos)'
+            return self.points2layer(ee, desc)
+        else:
+            return None
+
+    def points2layer(self, ees, desc):
+        layer_nodo_puntos = self.generic_node(f'Puntos: {desc}')
+        children_puntos = layer_nodo_puntos['children']
+        cnt = 1
+        for ee in ees:
+            atrib = ee.atributo if ee.atributo is not None else f'Punto {cnt}'
+            cnt += 1
+            esp_data = [ee.punto.coords[0], ee.punto.coords[1]]
+            dict_layer = {
+                'label': f'"{atrib}"',
+                'layer': f'L.marker({esp_data}).bindPopup("{atrib}")'
+            }
+            children_puntos.append(dict_layer)
+            self.total_geom.append(ee.punto)
+
+        return layer_nodo_puntos
+
+    def line2layer(self, ee, desc):
+        esp_data = [[c[0], c[1]] for c in ee.linea.coords]
+        dict_layer = {
+            'label': f'"{desc}"',
+            'layer': f'L.polyline({esp_data}).bindPopup("{desc}")'
+        }
+        self.total_geom.append(ee[0].linea)
+
+        return dict_layer
+
+    def polygon2layer(self, ee, desc):
+        esp_data = [[c[0], c[1]] for c in ee.poligono.coords[0]]
+        dict_layer = {
+            'label': f'"{desc}"',
+            'layer': f'L.polygon({esp_data}).bindPopup("{desc}")'
+        }
+        self.total_geom.append(ee[0].poligono)
+
+        return dict_layer
+
+    def document2layers(self, documento, childrens=False):
+        layer_doc = None
+        layer_files = None
+        layer_file_title = None
+        layer_doc_title = None
+        ees = documento.espacial.all()
+        if len(ees) > 0:
+            layer_doc = self.ee2layer(ees, documento.__str__())
+
+        if childrens:  # Armar capas de archivos referenciados
+            files = documento.compuesto_por.all()
+            for file in files:
+                layer_file = self.archivo2layer(file)
+                if layer_file is not None:
+                    if layer_files is not None:
+                        layer_files.append(layer_file)
+                    else:
+                        layer_files = []
+                        layer_files.append(layer_file)
+
+            if layer_files is not None:
+                # Agregar Childrens a diccionario layer_title
+                layer_file_title = self.generic_node('Archivos')
+                layer_file_title['children'] = layer_files
+
+        if (layer_doc is not None) or (layer_file_title is not None):
+            layer_doc_title = self.object_node(documento)
+            if layer_doc is not None:
+                layer_doc_title['children'] = [layer_doc]
+                if layer_file_title is not None:
+                    layer_doc['children'] = [layer_file_title]
+            else:
+                layer_doc_title['children'] = [layer_file_title]
+
+        return layer_doc_title
+
+    def archivo2layer(self, archivo):
+        layer_file = None
+        ees = archivo.espacial.all()
+        if len(ees) > 0:
+            layer_file = self.ee2layer(ees, archivo.__str__())
+
+        return layer_file
+
+    def cordsminmax(self, coords):
+        x_component = [x[0] for x in coords]
+        y_component = [y[1] for y in coords]
+
+        return [[min(x_component), min(y_component)], [max(x_component), max(y_component)]]

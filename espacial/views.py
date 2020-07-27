@@ -420,28 +420,30 @@ def consulta_espacial(request):
     Gestiona las consultas espaciales y los valores devueltos
     """
     if request.method == "GET":
-        print(request.GET.get('coordenadas'))
-        print(request.GET.get('srid_list'))
-        print(request.GET.get('objeto'))
-        print(request.GET.get('tipo'))
-        print(request.GET.get('distancia'))
+        if bool(request.GET.dict()):
+            srid = request.GET.get('srid_list')
+            coordenadas = request.GET.get('coordenadas')
+            objeto = request.GET.get('objeto')
+            tipo_busqueda = request.GET.get('tipo')
+            distancia = request.GET.get('distancia')
+            print(request.GET.dict())
 
-        coords = strcoords2list(request.GET.get('coordenadas') + '\r\n')
-        print(coords)
-        # Armar un punto a partir de coords
-        pnt = coords2Point(coords[0], request.GET.get('srid_list'))
+            coords = strcoords2list(request.GET.get('coordenadas') + '\r\n')
+            print(coords)
+            # Armar un punto a partir de coords
+            pnt = coords2Point(coords[0], request.GET.get('srid_list'))
 
-        # Distancia de búsqueda
-        distance = float(request.GET.get('distancia'))
+            # Distancia de búsqueda
+            distance = float(request.GET.get('distancia'))
 
-        # Consulta
-    result = ElementoEspacial.objects.filter(
-        Q(punto__distance_lte=(pnt, D(km=distance))) |
-        Q(poligono__distance_lte=(pnt, D(km=distance))) |
-        Q(linea__distance_lte=(pnt, D(km=distance)))
-    )
+            # Consulta
+            result = ElementoEspacial.objects.filter(
+                Q(punto__distance_lte=(pnt, D(km=distance))) |
+                Q(poligono__distance_lte=(pnt, D(km=distance))) |
+                Q(linea__distance_lte=(pnt, D(km=distance)))
+            )
 
-    print(result)
+            print(result)
 
     return render(
         request,
