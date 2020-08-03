@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'documental.apps.DocumentalConfig',
     'calidad.apps.CalidadConfig',
     'espacial.apps.EspacialConfig',
+    'mensajes.apps.MensajesConfig',
 
     'django_extensions',
     'widget_tweaks',
@@ -70,6 +71,8 @@ TEMPLATES = [
             'calidad/templates/tipo_chequeo',
             'calidad/templates/lista_chequeo',
             'calidad/templates/chequeo',
+            'mensajes/templates/mensaje',
+            'mensajes/templates/tique',
         ],
         'APP_DIRS': True,
         'OPTIONS': {

@@ -1,0 +1,14 @@
+{% extends 'template_base.html' %}
+{% load static %}
+
+{% block contenido %}
+<h4> Nuevo Tique {{ titulo }} </h4>
+<form method="POST" class="post-form">
+{% csrf_token %}
+<div>
+{% include 'template_form.html' with form=form %}
+</div>
+
+<div class="float-sm-right pt-4"><button type="submit" class="btn btn-secondary btn-lg">Guardar</button></div>
+</form>
+{% endblock %}

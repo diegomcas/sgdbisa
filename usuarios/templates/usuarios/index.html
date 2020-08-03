@@ -1,16 +1,73 @@
 {% extends 'template_base.html' %}
 
 {% block contenido %}
-<div class="container">
-    <h2>Área para miembros</h2>
-    <p>Bienvenido <b>{{request.user.username}}</b>, 
-        esta página es exclusiva para usuarios registrados.</p>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            {% if tiques_user|length > 0 %}
+            <h5>Tiques tomados por <b>{{request.user.username}}</b>:</h5>
+            {% for tq_user in tiques_user %}
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Tique {{ tq_user.tipo_obj }}: {{ tq_user.obj_name }}</h5>
+                    <p class="card-text">{{ tq_user.tipo_text }}</p>
+                    <p class="card-text">{{ tq_user.descripcion }}</p>
+                    <p class="card-text">Fecha emisión: {{ tq_user.fecha_emision }} Fecha adquisición: {{ tq_user.fecha_adquisicion }}</p>
+                    {% if tq_user.tipo_obj == 'Documento' %}
+                        {% if tq_user.tipo == 'OBS' %}
+                            <a href="{% url 'edita_documento' pk_proy=tq_user.proyecto_pk pk_doc=tq_user.obj_pk %}" class="card-link">Finalizar tique</a>
+                        {% endif %}
+                        {% if tq_user.tipo == 'REV' %}
+                            <a href="#" class="card-link">Finalizar tique</a>
+                        {% endif %}
+                    {% endif %}
+                    {% if tq_user.tipo_obj == 'Archivo' %}
+                        {% if tq_user.tipo == 'OBS' %}
+                            <a href="{% url 'edita_archivo' pk_proy=tq_user.proyecto_pk pk_file=tq_user.obj_pk %}" class="card-link">Finalizar tique</a>
+                        {% endif %}
+                        {% if tq_user.tipo == 'REV' %}
+                            <a href="#" class="card-link">Finalizar tique</a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+    <hr>
+
+    <div class="row">
+        <div class="col-sm-6">
+            
+            {% if tiques_abiertos|length > 0 %}
+            <h5>Tiques disponibles:</h5>
+            {% for tq_open in tiques_abiertos %}
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Tique {{ tq_open.tipo_obj }}: {{ tq_open.obj_name }}</h5>
+                    <p class="card-text">({{ tq_open.tipo_text }}) {{ tq_open.descripcion }}</p>
+                    <p class="card-text">Fecha emisión: {{ tq_open.fecha_emision }}</p>
+                    <a href="{% url 'tomar_tique' pk_tique=tq_open.pk %}" class="card-link">Tomar Tique</a>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+        <div class="col-sm-6">
+            {% if mensajes|length > 0 %}
+            <h5>Mensajes del sistema:</h5>
+            {% for mensaje in mensajes %}
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ mensaje.tipo_obj }}: {{ mensaje.obj_name }}</h5>
+                    <p class="card-text">{{ mensaje.mensaje }}</p>
+                    <a href="#" class="card-link">Ver {{ mensaje.tipo_obj }}</a>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
 </div>
-    
-<div class="container">
-    <h5>ToDo:</h5>
-    <ul class="list-group list-group-flush">
-        <li class="list-group-item">TODO EL SISTEMA :-( !!!</li>
-    </ul>
-  </div>
 {% endblock %}

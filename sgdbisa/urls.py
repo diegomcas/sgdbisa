@@ -25,5 +25,6 @@ urlpatterns = [
     path('', include('documental.urls')),
     path('', include('calidad.urls')),
     path('', include('espacial.urls')),
+    path('', include('mensajes.urls')),
     path('jsi18n/', JavaScriptCatalog.as_view(), name='jsi18n'),
 ]

@@ -1,5 +1,4 @@
 from django.contrib.gis.geos import GeometryCollection
-from django.db.models import Q
 from documental.models import Proyecto, Documento, Archivo
 
 class JsLayer:
@@ -43,8 +42,6 @@ class JsLayer:
     def make_layers(self):
         layers_docs = None
         layers_files = None
-
-        # qsp = Proyecto.objects.get(pk=1).documentos_proyecto.filter(~Q(espacial=None))
 
         if type(self.objects) == Proyecto:
             # Childrens son Documentos y Archivos pero Documentos sin Archivos referidos
@@ -119,25 +116,26 @@ class JsLayer:
         return generic_node
 
     def ee2layer(self, ee, title):
-        if ee[0].tipo_elemento == 'PL':
-            desc = f'{title} (Polígono)'
-            return self.polygon2layer(ee[0], desc)
-        elif ee[0].tipo_elemento == 'LN':
-            desc = f'{title} (Línea)'
-            return self.line2layer(ee[0], desc)
-        elif ee[0].tipo_elemento == 'PT':
+        if len(ee) > 1:  # Puntos
             desc = f'{title} (Puntos)'
             return self.points2layer(ee, desc)
+        elif len(ee) == 1:
+            if ee[0].tipo_elemento == 'PL':
+                desc = f'{title} (Polígono)'
+                self.total_geom.append(ee[0].poligono)
+                return self.polygon2layer(ee[0], desc)
+            if ee[0].tipo_elemento == 'LN':
+                desc = f'{title} (Línea)'
+                self.total_geom.append(ee[0].linea)
+                return self.line2layer(ee[0], desc)
         else:
             return None
 
     def points2layer(self, ees, desc):
         layer_nodo_puntos = self.generic_node(f'Puntos: {desc}')
         children_puntos = layer_nodo_puntos['children']
-        cnt = 1
         for ee in ees:
-            atrib = ee.atributo if ee.atributo is not None else f'Punto {cnt}'
-            cnt += 1
+            atrib = ee.atributo if ee.atributo is not None else 'Punto'
             esp_data = [ee.punto.coords[0], ee.punto.coords[1]]
             dict_layer = {
                 'label': f'"{atrib}"',
@@ -154,7 +152,6 @@ class JsLayer:
             'label': f'"{desc}"',
             'layer': f'L.polyline({esp_data}).bindPopup("{desc}")'
         }
-        self.total_geom.append(ee[0].linea)
 
         return dict_layer
 
@@ -164,7 +161,6 @@ class JsLayer:
             'label': f'"{desc}"',
             'layer': f'L.polygon({esp_data}).bindPopup("{desc}")'
         }
-        self.total_geom.append(ee[0].poligono)
 
         return dict_layer
 

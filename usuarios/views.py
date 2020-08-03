@@ -4,6 +4,90 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, Pass
 from django.contrib.auth import login as do_login
 from django.contrib.auth import logout as do_logout
 from django.contrib.auth.decorators import login_required
+from mensajes.models import Mensaje, Tique, MensajeDestinatarios, TiqueDestinatarios
+
+
+def tiques_user_info(prop):
+    tiques = []
+    tiques_user = Tique.objects.filter(propietario=prop)
+    tiques_user = tiques_user.order_by('fecha_emision').order_by('fecha_adquisicion')
+    for tq in tiques_user:
+        tique = {}
+        tique['pk'] = tq.pk
+        tique['descripcion'] = tq.descripcion
+        tique['fecha_emision'] = tq.fecha_emision
+        tique['fecha_adquisicion'] = tq.fecha_adquisicion
+        tique['tipo'] = tq.tipo_tique
+        tique['tipo_text'] = tq.get_tipo_tique_display()
+        # Objeto al que refiere el tique
+        try:
+            tq_obj = tq.tiquesdoc.get()
+            tique['tipo_obj'] = 'Documento'
+        except Exception:
+            tq_obj = tq.tiquesarch.get()
+            tique['tipo_obj'] = 'Archivo'
+
+        tique['proyecto_pk'] = tq_obj.proyecto.pk
+        tique['obj_pk'] = tq_obj.pk
+        tique['obj_name'] = tq_obj.__str__()
+
+        tiques.append(tique)
+
+    return tiques
+
+def tiques_abiertos_info(usuario):
+    tiques = []
+    tiquesdest_abiertos = TiqueDestinatarios.objects.filter(miembro=usuario)
+    tiquesdest_abiertos = tiquesdest_abiertos.filter(tique__propietario__isnull=True)
+    tiquesdest_abiertos = tiquesdest_abiertos.order_by('tique__fecha_emision')
+    for tqdest in tiquesdest_abiertos:
+        tique = {}
+        tq = tqdest.tique
+        tique['pk'] = tq.pk
+        tique['descripcion'] = tq.descripcion
+        tique['fecha_emision'] = tq.fecha_emision
+        tique['fecha_adquisicion'] = tq.fecha_adquisicion
+        tique['tipo'] = tq.tipo_tique
+        tique['tipo_text'] = tq.get_tipo_tique_display()
+        # Objeto al que refiere el tique
+        try:
+            tq_obj = tq.tiquesdoc.get()
+            tique['tipo_obj'] = 'Documento'
+        except Exception:
+            tq_obj = tq.tiquesarch.get()
+            tique['tipo_obj'] = 'Archivo'
+
+        tique['proyecto_pk'] = tq_obj.proyecto.pk
+        tique['obj_pk'] = tq_obj.pk
+        tique['obj_name'] = tq_obj.__str__()
+
+        tiques.append(tique)
+
+    return tiques
+
+def mensajes_info(usuario):
+    mensajes = []
+    mensajes_dest = MensajeDestinatarios.objects.filter(miembro=usuario, leido=False)
+    mensajes_dest = mensajes_dest.order_by('mensaje__fecha')
+    for mensaje_dest in mensajes_dest:
+        msg = mensaje_dest.mensaje
+        mensaje = {}
+        mensaje['mensaje'] = msg.mensaje
+        mensaje['fecha'] = msg.fecha
+        try:
+            msg_obj = msg.mensajesdoc.get()
+            mensaje['tipo_obj'] = 'Documento'
+        except Exception:
+            msg_obj = msg.mensajesarch.get()
+            mensaje['tipo_obj'] = 'Archivo'
+
+        mensaje['obj_pk'] = msg_obj.pk
+        mensaje['obj_name'] = msg_obj.__str__()
+
+        mensajes.append(mensaje)
+
+    return mensajes
+
 
 # Create your views here.
 def index(request):
@@ -13,8 +97,25 @@ def index(request):
     Si no, se redirecciona al login.
     """
     if request.user.is_authenticated:
+        # Tiques tomados por el usuario
+        tiques_user = tiques_user_info(request.user)
+        print(tiques_user)
+        # Todos los Mensajes del usuario
+        mensajes = mensajes_info(request.user)
+        # Todos los Tiques del Usuario menos los que tienen propietarios
+        tiques_abiertos = tiques_abiertos_info(request.user)
+        print(tiques_abiertos)
+
         # devolvemos la portada
-        return render(request, "usuarios/index.html")
+        return render(
+            request,
+            "usuarios/index.html",
+            {
+                'tiques_user': tiques_user,
+                'mensajes': mensajes,
+                'tiques_abiertos': tiques_abiertos,
+            }
+        )
     # redireccionamos al login
     return redirect('/login')
 

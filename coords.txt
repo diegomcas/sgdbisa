@@ -21,4 +21,77 @@ Mi Casa
 -31.557609 -60.729870
 -31.557421 -60.730586
 
-{'label': '"Documento 00-0001 (A)"', 'selectAllCheckbox': 'true', 'children': [{'label': '"Poligono"', 'layer': 'L.polygon([[-31.556766000000295, -60.73009800000007], [-31.55678400000032, -60.729983000000075], [-31.556998000000288, -60.730054000000074], [-31.556979000000275, -60.730163000000076], [-31.556766000000295, -60.73009800000007]]).bindPopup("00-0001 (A)")'}, {'label': '"Archivos"', 'selectAllCheckbox': 'true', 'children': [{'label': '"Poligono"', 'layer': 'L.polygon([[-31.55512, -60.732541], [-31.556183, -60.728312], [-31.557787, -60.72888], [-31.556839, -60.733101], [-31.55512, -60.732541]]).bindPopup("{\'00-0001.dwg (A)\'}")'}, {'label': '"Poligono"', 'layer': 'L.polygon([[-31.556693, -60.730348], [-31.556835, -60.729581], [-31.557609, -60.72987], [-31.557421, -60.730586], [-31.556693, -60.730348]]).bindPopup("{\'00-0002.dwg (A)\'}")'}]}]}
+{
+  'label': '"Documento: 00-0001 (A)"',
+  'selectAllCheckbox': 'true',
+  'children':
+    [
+      {
+        'label': '"Poligono 00-0001 (A) (Polígono)"',
+        'layer': 'L.polygon([[-31.556766000000295, -60.73009800000007], [-31.55678400000032, -60.729983000000075], [-31.556998000000288, -60.730054000000074], [-31.556979000000275, -60.730163000000076], [-31.556766000000295, -60.73009800000007]]).bindPopup("00-0001 (A) (Polígono)")',
+        'children':
+          {
+            'label': '"title"',
+            'selectAllCheckbox': 'true',
+            'children':
+              [
+                {
+                  'label': '"Poligono 00-0001.dwg (A) (Polígono)"',
+                  'layer': 'L.polygon([[-31.55512, -60.732541], [-31.556183, -60.728312], [-31.557787, -60.72888], [-31.556839, -60.733101], [-31.55512, -60.732541]]).bindPopup("00-0001.dwg (A) (Polígono)")'
+                },
+                {
+                  'label': '"Poligono 00-0002.dwg (A) (Polígono)"',
+                  'layer': 'L.polygon([[-31.556693, -60.730348], [-31.556835, -60.729581], [-31.557609, -60.72987], [-31.557421, -60.730586], [-31.556693, -60.730348]]).bindPopup("00-0002.dwg (A) (Polígono)")'
+                },
+                {
+                  'label': '"title"',
+                  'selectAllCheckbox': 'true',
+                  'children':
+                    [
+                      {
+                        'label': '"Punto"',
+                        'layer': 'L.marker([-31.55512, -60.732541]).bindPopup("Punto")'
+                      },
+                      {
+                        'label': '"Punto"',
+                        'layer': 'L.marker([-31.556183, -60.728312]).bindPopup("Punto")'
+                      },
+                      {
+                        'label': '"Punto"',
+                        'layer': 'L.marker([-31.557787, -60.72888]).bindPopup("Punto")'
+                      },
+                      {
+                        'label': '"Punto"',
+                        'layer': 'L.marker([-31.556839, -60.733101]).bindPopup("Punto")'
+                      }
+                    ]
+                }
+              ]
+          }
+      }
+    ]
+}
+
+{
+  label: "Documento 00-0001 (A)",
+  selectAllCheckbox: true,
+  children: 
+    [
+      {
+        label: "Poligono 00-0001 (A)",
+        layer: L.polygon([[-31.556766000000295, -60.73009800000007], [-31.55678400000032, -60.729983000000075], [-31.556998000000288, -60.730054000000074], [-31.556979000000275, -60.730163000000076], [-31.556766000000295, -60.73009800000007]]).bindPopup("00-0001 (A)")
+      },
+      {
+        label: "Archivos",
+        selectAllCheckbox: true,
+        children:
+          [
+            {
+              label: "Poligono 00-0001.dwg (A)",
+              layer: L.polygon([[-31.55512, -60.732541], [-31.556183, -60.728312], [-31.557787, -60.72888], [-31.556839, -60.733101], [-31.55512, -60.732541]]).bindPopup("00-0001.dwg (A)")
+            },
+            {
+              label: "Poligono 00-0002.dwg (A)",
+              layer: L.polygon([[-31.556693, -60.730348], [-31.556835, -60.729581], [-31.557609, -60.72987], [-31.557421, -60.730586], [-31.556693, -60.730348]]).bindPopup("00-0002.dwg (A)")
+            },
+            {label: "00-0010.doc (A)", selectAllCheckbox: true, children: [{label: "Punto 00-0010.doc (A)", layer: L.marker([-31.55512, -60.732541]).bindPopup("Punto 00-0010.doc (A)")}, {label: "Punto 00-0010.doc (A)", layer: L.marker([-31.556183, -60.728312]).bindPopup("Punto 00-0010.doc (A)")}, {label: "Punto 00-0010.doc (A)", layer: L.marker([-31.557787, -60.72888]).bindPopup("Punto 00-0010.doc (A)")}, {label: "Punto 00-0010.doc (A)", layer: L.marker([-31.556839, -60.733101]).bindPopup("Punto 00-0010.doc (A)")}]}]}]}

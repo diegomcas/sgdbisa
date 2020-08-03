@@ -4,6 +4,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from espacial.models import ElementoEspacial
+from mensajes.models import Mensaje, Tique
 
 
 class Proyecto(models.Model):
@@ -157,6 +158,18 @@ class Documento(models.Model):
         blank=True,
         related_name='espacialesdoc',
         help_text="Ubicación espacial del documento"
+    )
+    mensaje = models.ManyToManyField(
+        'mensajes.Mensaje',
+        blank=True,
+        related_name='mensajesdoc',
+        help_text="Mensajes de actividad sobre el documento"
+    )
+    tique = models.ManyToManyField(
+        'mensajes.Tique',
+        blank=True,
+        related_name='tiquesdoc',
+        help_text="Mensajes de actividad sobre el documento"
     )
 
     class Meta:
@@ -350,6 +363,18 @@ class Archivo(models.Model):
         blank=True,
         related_name='espacialesfile',
         help_text="Ubicación espacial del archivo"
+    )
+    mensaje = models.ManyToManyField(
+        'mensajes.Mensaje',
+        blank=True,
+        related_name='mensajesarch',
+        help_text="Mensajes de actividad sobre el documento"
+    )
+    tique = models.ManyToManyField(
+        'mensajes.Tique',
+        blank=True,
+        related_name='tiquesarch',
+        help_text="Mensajes de actividad sobre el documento"
     )
 
     class Meta:
