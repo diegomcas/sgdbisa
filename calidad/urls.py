@@ -67,4 +67,9 @@ urlpatterns = [
         views.elimina_chequeo,
         name='elimina_chequeo'
     ),
+    path(
+        'proyecto/<int:pk_proy>/calidad/',
+        views.estado_calidad,
+        name='estado_calidad'
+    ),
 ]

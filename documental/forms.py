@@ -66,7 +66,7 @@ class DocumentoForm(ModelForm):
 
     class Meta:
         model = Documento
-        exclude = ['proyecto', 'reemplaza_a', 'reemplazado_por', 'espacial', ]
+        exclude = ['proyecto', 'reemplaza_a', 'reemplazado_por', 'espacial', 'mensaje', 'tique']
 
     def __init__(self, project, *args, **kwargs):
         super(DocumentoForm, self).__init__(*args, **kwargs)

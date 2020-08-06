@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from espacial.models import ElementoEspacial
 from mensajes.models import Mensaje, Tique
+from calidad.models import Chequeo
 
 
 class Proyecto(models.Model):
@@ -234,24 +235,59 @@ class Documento(models.Model):
         """
         A partir del documento (self) retorna un documento que es una revisión de self
         """
+        # Atributos del objeto
         new_doc = Documento()
         new_doc.numero = self.numero
-        new_doc.tipo = self.tipo
+        new_doc.titulo = self.titulo
+        new_doc.fecha = timezone.now()
+        new_doc.tipo_documento = self.tipo_documento
         new_doc.tipo_obra = self.tipo_obra
         new_doc.descripcion = self.descripcion
         new_doc.propietario = self.propietario
         new_doc.proyecto = self.proyecto
         new_doc.reemplaza_a = self
-        new_doc.reemplazado_por = None
         new_doc.revision = self.revision
         new_doc.revision_inc()
+        new_doc.save()
+        # Relaciones con refiere_a (Documentos)
+        new_doc.refiere_a.set(self.refiere_a.all())
+        # Relaciones con compuesto_por (Archivos)
+        new_doc.compuesto_por.set(self.compuesto_por.all())
+        # Relaciones con Elementos_Espaciales crear copia y asignarle la copia al documento nuevo
+        ees_ant = self.espacial.all()
+        for ee_ant in ees_ant:
+            ee_nuevo = ElementoEspacial()
+            ee_nuevo.tipo_elemento = ee_ant.tipo_elemento
+            ee_nuevo.poligono = ee_ant.poligono
+            ee_nuevo.atributo = ee_ant.atributo
+            ee_nuevo.punto = ee_ant.punto
+            ee_nuevo.linea = ee_ant.linea
+            ee_nuevo.save()
+            new_doc.espacial.add(ee_nuevo)
+        # Relaciones de calidad (Chequeos de self -> new_doc)
+        chequeos_doc = self.chequeo_documento.all()
+        for chequeo_doc in chequeos_doc:
+            new_chequeo = Chequeo()
+            new_chequeo.documento = chequeo_doc.documento
+            new_chequeo.tipo_chequeo = chequeo_doc.tipo_chequeo
+            new_chequeo.save()
+        # Relaciones de referencia (Documentos que refieren a éste)
+        docs_ref_this = Documento.objects.filter(refiere_a=self)
+        for doc_ref_this in docs_ref_this:
+            doc_ref_this.refiere_a.remove(self)
+            doc_ref_this.refiere_a.add(new_doc)
+
+        # Tiques abierto pertenecientes a self se pasan a new_doc
+        # tique_open = self.tique.filter(finalizado=False)
+        # new_doc.tique.add(tique_open)
+        # self.tique.clear()
         return new_doc
 
     def is_replaced(self):
         """
         Retorna True si el Documento fue reemplazado
         """
-        return self.documento_reemplazado_por is None
+        return self.documento_reemplazado_por.count() > 0
 
     def is_replaces_to(self):
         """
@@ -399,8 +435,85 @@ class Archivo(models.Model):
         """
         return self.nombre_archivo + ' (' + self.revision + ')'
 
+    def revision_inc(self):
+        """
+        Retorna un valor de revisión válido incrementeando actual_rev
+        """
+        actual_rev = self.revision
+        str_salida = ''
+        band = True
+
+        if actual_rev.isnumeric():
+            str_salida = f'{int(actual_rev) + 1}'
+            str_salida = str_salida[::-1]
+        elif len(actual_rev) > 0:
+            for char in actual_rev[::-1]:
+                char_index = ascii_uppercase.find(char)
+                if char_index >= 0:
+                    if band:
+                        if char == ascii_uppercase[-1]:
+                            # Pongo actual en 'ascii_uppercase[0]'
+                            str_salida = str_salida + ascii_uppercase[0]
+                            # Pongo la bandera en True
+                            band = True
+                        else:
+                            # Solo incremento
+                            str_salida = str_salida + ascii_uppercase[char_index + 1]
+                            band = False
+                    else:
+                        str_salida = str_salida + char
+
+            if band:
+                str_salida = str_salida + ascii_uppercase[0]
+        else:
+            str_salida = 'A'
+
+        self.revision = str_salida[::-1]
+
+    def make_revision_file(self):
+        """
+        A partir del archivo (self) retorna un archivo que es una revisión de self
+        """
+        # Atributos del objeto
+        new_file = Archivo()
+        new_file.nombre_archivo = self.nombre_archivo
+        new_file.directorio = self.directorio
+        new_file.tipo_representacion = self.tipo_representacion
+        new_file.descripcion = self.descripcion
+        new_file.fecha_creacion = timezone.now()
+        new_file.fecha_edicion = timezone.now()
+        new_file.reemplaza_a = self
+        new_file.propietario = self.propietario
+        new_file.proyecto = self.proyecto
+        new_file.revision = self.revision
+        new_file.revision_inc()
+        new_file.save()
+        # Relaciones con Elementos_Espaciales crear copia y asignarle la copia al documento nuevo
+        ees_ant = self.espacial.all()
+        for ee_ant in ees_ant:
+            ee_nuevo = ElementoEspacial()
+            ee_nuevo.tipo_elemento = ee_ant.tipo_elemento
+            ee_nuevo.poligono = ee_ant.poligono
+            ee_nuevo.atributo = ee_ant.atributo
+            ee_nuevo.punto = ee_ant.punto
+            ee_nuevo.linea = ee_ant.linea
+            ee_nuevo.save()
+            new_file.espacial.add(ee_nuevo)
+        # Relaciones de referencia (Documentos que refieren a éste)
+        docs_ref_this = Documento.objects.filter(compuesto_por=self)
+        for doc_ref_this in docs_ref_this:
+            doc_ref_this.compuesto_por.remove(self)
+            doc_ref_this.compuesto_por.add(new_file)
+
+        # Tiques abierto pertenecientes a self se pasan a new_file
+        # tique_open = self.tique.filter(finalizado=False)
+        # new_file.tique.add(tique_open)
+        # self.tique.clear()
+
+        return new_file
+
     def is_replaced(self):
         """
         Retorna True si el Archivo fue reemplazado
         """
-        return self.archivo_reemplazado_por is None
+        return self.archivo_reemplazado_por.count() > 0

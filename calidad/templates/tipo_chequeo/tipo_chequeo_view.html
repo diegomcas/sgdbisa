@@ -82,7 +82,7 @@
                         <td>...</td>
                     {% endif %}
                     {% if 'documental.view_documento' in g_perms %}<td><a class="material-icons md-18" data-toggle="tooltip" title="ver datos del Documento" href="{% url 'ver_documento' pk_proy=chk.documento.proyecto.pk pk_doc=chk.documento.pk %}">visibility</a></td>{% endif %}
-                    {% if 'documental.change_documento' in g_perms %}<td><a class="material-icons md-18" data-toggle="tooltip" title="Editar datos del Documento" href="{% url 'edita_documento' pk_proy=chk.documento.proyecto.pk pk_doc=chk.documento.pk %}">edit</a></td>{% endif %}
+                    {% if 'documental.change_documento' in g_perms %}<td><a class="material-icons md-18" data-toggle="tooltip" title="Editar datos del Documento" href="{% url 'edita_documento' pk_proy=chk.documento.proyecto.pk pk_doc=chk.documento.pk pk_tique=0%}">edit</a></td>{% endif %}
                     {% if 'documental.delete_documento' in g_perms %}<td><a class="material-icons md-18" data-toggle="tooltip" title="Eliminar el Documento" href="{% url 'elimina_documento' pk_proy=chk.documento.proyecto.pk pk_doc=chk.documento.pk %}">delete</a></td>{% endif %}
                     {% if 'calidad.add_chequeo' in g_perms %}
                         <td><a class="material-icons md-18" data-toggle="tooltip" title="Asignar Chequeos al Documento" href="{% url 'agrega_chequeo' pk_proy=chk.documento.proyecto.pk pk_doc=chk.documento.pk %}">playlist_add_check</a></td>

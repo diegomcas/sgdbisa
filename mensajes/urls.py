@@ -18,4 +18,9 @@ urlpatterns = [
         views.tomar_tique,
         name='tomar_tique'
     ),
+    path(
+        'mensaje/<int:pk_msg>/read/',
+        views.marcar_leido,
+        name='marcar_leido'
+    ),
 ]

@@ -1,0 +1,63 @@
+{% extends 'template_base.html' %}
+
+{% block contenido %}
+<div class="container-fluid">
+    <h4>Resultado de la consulta espacial</h4><hr>
+    <h5 class="text-body">Elementos encontrados {{ entidades.count }}</h5>
+    <div class="row">
+        <div class="col-sm-12">
+            <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Buscar...">
+        </div>
+        <div class="col">
+            <table class="table table-hover table-sm" style="font-size: 12px">
+                <thead>
+                    <tr>
+                        <th>Orden de Trabajo</th>
+                        <th>Tipo</th>
+                        <th>Nombre</th>
+                        <th>Revisión</th>
+                        <th> </th>
+                        <th> </th>
+                    </tr>
+                </thead>
+                <tbody id="table">
+                {% for entidad in entidades %}
+                    <tr>
+                        <td><div data-toggle="tooltip" title="{{ entidad.descripcion }}">{{ entidad.proy_numero }}</div></td>
+                        <td>{{ entidad.tipo }}</td>
+                        <td>{{ entidad.nombre }}</td>
+                        <td>{{ entidad.revision }}</td>
+                        {% if entidad.tipo == 'Documento' %}
+                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Ver datos del Documento" href="{% url 'ver_documento' pk_proy=entidad.proy_pk pk_doc=entidad.id %}">visibility</a></td>
+                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Visualizar ubicación Documento" href="{% url 'mapping' pk_object=entidad.id obj='documento' %}">map</a></td>
+                        {% endif %}
+                        {% if entidad.tipo == 'Archivo' %}
+                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Ver datos del Archivo" href="{% url 'ver_archivo' pk_proy=entidad.proy_pk pk_file=entidad.id %}">visibility</a></td>
+                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Visualizar ubicación Archivo" href="{% url 'mapping' pk_object=entidad.id obj='archivo' %}">map</a></td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    function onOffDoc(tableRow, value) {
+        if (tableRow.text().toLowerCase().indexOf(value) > -1) {
+            // Mostrar
+            tableRow.show();
+        } else { // No mostrar
+            tableRow.hide();
+        }
+    }
+
+    $(document).ready(function(){
+        $("#searchInput").on("keyup", function() {
+            $("#table tr").filter(function() {
+                onOffDoc($(this), $("#searchInput").val().toLowerCase());
+            });
+        });
+    });
+</script>
+{% endblock %}

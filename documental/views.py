@@ -1,13 +1,34 @@
+from django.utils import timezone
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import Proyecto, Documento, Archivo
 from calidad.models import Chequeo
+from mensajes.models import Tique, Mensaje, MensajeDestinatarios
 from .forms import ProyectoForm, DocumentoForm, ArchivoForm
 from .test_perms import list_proyectos, finalize_proyecto, view_proyecto, add_proyecto, update_proyecto
 from .test_perms import list_documentos, view_documento, add_documento, update_documento
 from .test_perms import delete_documento, revision_documento
 from .test_perms import list_archivos, view_archivo, add_archivo, update_archivo
 from .test_perms import delete_archivo, revision_archivo
+
+def mensaje_destinatarios(mensaje, pk_proyecto):
+    miembros = Proyecto.objects.get(pk=pk_proyecto).miembros.all()
+    for miembro in miembros:
+        # Tique Destinatario por cada miembro
+        mensaje_dest = MensajeDestinatarios()
+        mensaje_dest.miembro = miembro
+        mensaje_dest.mensaje = mensaje
+        mensaje_dest.save()
+
+def emitir_mensaje(obj, msg):
+    # Emitir mensaje
+    mensaje = Mensaje()
+    mensaje.mensaje = msg
+    mensaje.fecha = timezone.now()
+    mensaje.save()
+    obj.mensaje.add(mensaje)
+    # Mesaje a destinatarios
+    mensaje_destinatarios(mensaje, obj.proyecto_id)
 
 @user_passes_test(list_proyectos)
 @login_required
@@ -141,7 +162,9 @@ def nuevo_documento(request, pk_proy):
         if form.is_valid():
             documento = form.save(commit=False)
             documento.proyecto = project
-            form.save()
+            doc = form.save()
+            emitir_mensaje(doc, 'Se a creado un nuevo Documento')
+
             return redirect('ver_proyecto', primary_key=pk_proy)
     else:
         form = DocumentoForm(project)
@@ -155,7 +178,7 @@ def nuevo_documento(request, pk_proy):
 
 @user_passes_test(update_documento)
 @login_required
-def edita_documento(request, pk_proy, pk_doc):
+def edita_documento(request, pk_proy, pk_doc, pk_tique):
     """
     Modificar el documento 'pk_doc'
     """
@@ -165,8 +188,16 @@ def edita_documento(request, pk_proy, pk_doc):
     if request.method == "POST":
         form = DocumentoForm(proj, request.POST, instance=doc)
         if form.is_valid():
-            form.save()
-            return redirect('ver_proyecto', primary_key=pk_proy)
+            doc = form.save()
+            emitir_mensaje(doc, 'Se a modificado un nuevo Documento')
+            if pk_tique > 0:
+                tique = get_object_or_404(Tique, pk=pk_tique)
+                tique.finalizado = True
+                tique.fecha_finalización = timezone.now()
+                tique.save()
+                return redirect('index')
+            else:
+                return redirect('ver_proyecto', primary_key=pk_proy)
     else:
         form = DocumentoForm(proj, instance=doc)
 
@@ -179,12 +210,72 @@ def edita_documento(request, pk_proy, pk_doc):
 
 @user_passes_test(revision_documento)
 @login_required
-def revision_documento(request, pk_proy, pk_doc):
+def revision_documento(request, pk_proy, pk_doc, pk_tique):
     """
     Crea una revisión del documento 'pk_doc'
     """
-    doc = get_object_or_404(Documento, pk=pk_doc)
+    doc_a_revisionar = get_object_or_404(Documento, pk=pk_doc)
+    doc_revision = doc_a_revisionar.make_revision_doc()
 
+    if request.method == "POST":
+        form = DocumentoForm(doc_revision.proyecto, request.POST, instance=doc_revision)
+        if form.is_valid():
+            doc_revision = form.save()
+            # Emitir mensaje
+            emitir_mensaje(doc_revision, 'Se ha emitido una revisión del documento.')
+
+            if pk_tique > 0:
+                tique = get_object_or_404(Tique, pk=pk_tique)
+                tique.finalizado = True
+                tique.fecha_finalización = timezone.now()
+                tique.save()
+                return redirect('index')
+            else:
+                return redirect('ver_proyecto', primary_key=pk_proy)
+
+    else:
+        form = DocumentoForm(doc_revision.proyecto, instance=doc_revision)
+
+    return render(
+        request,
+        'documento.html',
+        {'form': form}
+    )
+
+
+@user_passes_test(revision_archivo)
+@login_required
+def revision_archivo(request, pk_proy, pk_file, pk_tique):
+    """
+    Crea una revisión del archivo 'pk_file'
+    """
+    file_a_revisionar = get_object_or_404(Archivo, pk=pk_file)
+    file_revision = file_a_revisionar.make_revision_file()
+
+    if request.method == "POST":
+        form = DocumentoForm(file_revision.proyecto, request.POST, instance=file_revision)
+        if form.is_valid():
+            file_revision = form.save()
+            # Emitir mensaje
+            emitir_mensaje(file_revision, 'Se ha emitido una revisión del archivo.')
+
+            if pk_tique > 0:
+                tique = get_object_or_404(Tique, pk=pk_tique)
+                tique.finalizado = True
+                tique.fecha_finalización = timezone.now()
+                tique.save()
+                return redirect('index')
+            else:
+                return redirect('ver_proyecto', primary_key=pk_proy)
+
+    else:
+        form = DocumentoForm(file_revision.proyecto, instance=file_revision)
+
+    return render(
+        request,
+        'documento.html',
+        {'form': form}
+    )
 
 @user_passes_test(delete_documento)
 @login_required
@@ -240,7 +331,8 @@ def nuevo_archivo(request, pk_proy):
         if form.is_valid():
             archivo = form.save(commit=False)
             archivo.proyecto = project
-            form.save()
+            file = form.save()
+            emitir_mensaje(file, 'Se a creado un nuevo Archivo')
             return redirect('ver_proyecto', primary_key=pk_proy)
     else:
         form = ArchivoForm(project)
@@ -250,7 +342,7 @@ def nuevo_archivo(request, pk_proy):
 
 @user_passes_test(update_archivo)
 @login_required
-def edita_archivo(request, pk_proy, pk_file):
+def edita_archivo(request, pk_proy, pk_file, pk_tique):
     """
     Edita un archivo nuevo pk_file
     """
@@ -262,8 +354,16 @@ def edita_archivo(request, pk_proy, pk_file):
         if form.is_valid():
             archivo = form.save(commit=False)
             archivo.proyecto = project
-            form.save()
-            return redirect('ver_proyecto', primary_key=pk_proy)
+            file = form.save()
+            emitir_mensaje(file, 'Se a modificado un Archivo')
+            if pk_tique > 0:
+                tique = get_object_or_404(Tique, pk=pk_tique)
+                tique.finalizado = True
+                tique.fecha_finalización = timezone.now()
+                tique.save()
+                return redirect('index')
+            else:
+                return redirect('ver_proyecto', primary_key=pk_proy)
     else:
         form = ArchivoForm(project, instance=file)
 

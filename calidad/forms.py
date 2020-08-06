@@ -37,7 +37,7 @@ class TipoChequeoForm(ModelForm):
         super(TipoChequeoForm, self).__init__(*args, **kwargs)
 
         if self.instance and self.instance.pk:
-            self.fields['listas_chequeo'].initial = self.instance.tipos_chequeo.all()
+            self.fields['listas_chequeo'].initial = self.instance.listachequeo_tipos_chequeo.all()
 
     def save(self, commit=True):
         tipo_chequeo = super(TipoChequeoForm, self).save(commit=False)
@@ -46,7 +46,7 @@ class TipoChequeoForm(ModelForm):
             tipo_chequeo.save()
 
         if tipo_chequeo.pk:
-            tipo_chequeo.tipos_chequeo.set(self.cleaned_data['listas_chequeo'])
+            tipo_chequeo.listachequeo_tipos_chequeo.set(self.cleaned_data['listas_chequeo'])
             self.save_m2m()
 
         return tipo_chequeo

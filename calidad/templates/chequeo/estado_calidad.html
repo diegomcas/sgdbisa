@@ -1,0 +1,19 @@
+{% extends 'template_base.html' %}
+
+{% block contenido %}
+<div class="container-fluid">
+    <h4>Detalles de revisiones realizadas al Proyecto {{proyecto}}</h4><hr>
+    <dl>
+    {% for estado in estados %}
+        <dt>Documento {{ estado.documento }}</dt>
+        {% if estado.pasa %}
+            <dd class="text-success">- El documento posee un chequeo completo</dd>
+        {% else %}
+            <dd><a href="{% url 'hace_chequeo' pk_proy=proyecto.pk pk_doc=estado.documento.pk %}">Repasar chequeo</a></dd>
+            {% for chk in estado.no_verificados %}
+                <dd class="text-danger">- <b>{{ chk.tipo_chequeo }}</b> no ha sido verificado</dd>
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+    </dl>
+{% endblock %}

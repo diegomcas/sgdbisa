@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from documental.models import Documento
+# from documental.models import Documento
 
 class ListaChequeo(models.Model):
     """
@@ -93,7 +93,7 @@ class Chequeo(models.Model):
         default=True
     )
     documento = models.ForeignKey(
-        'documental.Documento',
+        to='documental.Documento',
         related_name='chequeo_documento',
         default=0,
         on_delete=models.CASCADE,

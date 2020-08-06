@@ -415,6 +415,41 @@ def mapping(request, pk_object, obj):
     )
 
 
+def query_lists(ees):
+    """
+    Genera lista de documentos y archivos resultado de la consulta
+    """
+    documentos = []
+    archivos = []
+    for ee in ees:
+        entidad = {}
+        try:
+            obj = ee.espacialesdoc.get()
+            entidad['tipo'] = 'Documento'
+            entidad['nombre'] = obj.numero
+        except Exception:
+            obj = ee.espacialesfile.get()
+            entidad['tipo'] = 'Archivo'
+            entidad['nombre'] = obj.nombre_archivo
+
+        entidad['id'] = obj.id
+        entidad['proy_pk'] = obj.proyecto_id
+        entidad['proy_numero'] = obj.proyecto.__str__()
+        entidad['proy_desc'] = obj.proyecto.descripcion
+        entidad['revision'] = obj.revision
+        entidad['descripcion'] = obj.descripcion
+
+        if entidad['tipo'] == 'Documento':
+            if entidad not in documentos:
+                documentos.append(entidad)
+
+        if entidad['tipo'] == 'Archivo':
+            if entidad not in archivos:
+                archivos.append(entidad)
+
+    documentos.extend(archivos)
+    return documentos
+
 def consulta_espacial(request):
     """
     Gestiona las consultas espaciales y los valores devueltos
@@ -443,7 +478,13 @@ def consulta_espacial(request):
                 Q(linea__distance_lte=(pnt, D(km=distance)))
             )
 
-            print(result)
+            return render(
+                request,
+                'query_result.html',
+                {
+                    'entidades': query_lists(result),
+                }
+            )
 
     return render(
         request,

@@ -100,7 +100,9 @@ class MensajeDestinatarios(models.Model):
         on_delete=models.SET_NULL,
         help_text="Miembro del equipo de trabajo"
     )
-    leido = models.BooleanField()
+    leido = models.BooleanField(
+        default=False
+    )
 
 class TiqueDestinatarios(models.Model):
     """

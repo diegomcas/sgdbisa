@@ -76,6 +76,7 @@
                         {% if 'documental.change_documento' in g_perms %}<th> </th>{% endif %}
                         {% if 'documental.delete_documento' in g_perms %}<th> </th>{% endif %}
                         {% if 'calidad.add_chequeo' in g_perms %}<th> </th>{% endif %}
+                        {% if 'calidad.change_chequeo' in g_perms %}<th> </th>{% endif %}
                         {% if 'espacial.add_elementoespacial' in g_perms %}<th> </th>{% endif %}
                         {% if 'espacial.view_elementoespacial' in g_perms %}<th> </th>{% endif %}
                         {% if 'mensajes.add_tique' in g_perms %}<th> </th>{% endif %}
@@ -92,7 +93,7 @@
                             <td>...</td>
                         {% endif %}
                         {% if doc.is_replaced %}
-                            <td class="doc_replaced">{{ doc.documento_reemplazado_por }}</td>
+                            <td class="doc_replaced">{{ doc.documento_reemplazado_por.get }}</td>
                         {% else %}
                             <td class="doc_replaced">...</td>
                         {% endif %}
@@ -100,44 +101,62 @@
                         <td>{{ doc.tipo_documento }}</td>
                         <td>{{ doc.tipo_obra }}</td>
                         <td>{{ doc.propietario }}</td>
-                        {% if 'documental.view_documento' in g_perms %}<td><a class="material-icons md-18" data-toggle="tooltip" title="ver datos del Documento" href="{% url 'ver_documento' pk_proy=proyecto.pk pk_doc=doc.pk %}">visibility</a></td>{% endif %}
-                        {% if 'documental.change_documento' in g_perms %}<td><a class="material-icons md-18" data-toggle="tooltip" title="Editar datos del Documento" href="{% url 'edita_documento' pk_proy=proyecto.pk pk_doc=doc.pk %}">edit</a></td>{% endif %}
-                        {% comment %} {% if 'documental.revision_documento' in g_perms %}
-                            {% if doc.is_replaced %}
-                            <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión.">file_copy</i></td>
-                            {% else %}
-                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Crear una revisión del Documento" href="{% url 'revision_documento' pk_proy=proyecto.pk pk_doc=doc.pk %}">file_copy</a></td>
-                            {% endif %}
-                        {% endif %} {% endcomment %}
-                        {% if 'documental.delete_documento' in g_perms %}<td><a class="material-icons md-18" data-toggle="tooltip" title="Eliminar el Documento" href="{% url 'elimina_documento' pk_proy=proyecto.pk pk_doc=doc.pk %}">delete</a></td>{% endif %}
-                        {% if 'calidad.add_chequeo' in g_perms %}
-                            {% if doc.is_replaced %}
-                            <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión.">playlist_add_check</i></td>
-                            {% else %}
-                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Asignar Chequeos al Documento" href="{% url 'agrega_chequeo' pk_proy=proyecto.pk pk_doc=doc.pk %}">playlist_add_check</a></td>
-                            {% endif %}
+                        {% if 'documental.view_documento' in g_perms %}
+                            <td><a class="material-icons md-18" data-toggle="tooltip" title="ver datos del Documento" href="{% url 'ver_documento' pk_proy=proyecto.pk pk_doc=doc.pk %}">visibility</a></td>
                         {% endif %}
-                        {% if 'calidad.change_chequeo' in g_perms %}
-                            {% if doc.is_replaced %}
-                            <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión.">done_all</i></td>
-                            {% else %}
-                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Verificar el Documento" href="{% url 'hace_chequeo' pk_proy=proyecto.pk pk_doc=doc.pk %}">done_all</a></td>
+                        {% if doc.is_replaced %}
+                            {% if 'documental.change_documento' in g_perms %}
+                                <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión.">edit</i></td>
                             {% endif %}
-                        {% endif %}
-                        {% if 'espacial.add_elementoespacial' in g_perms %}
-                        <td><a class="material-icons md-18" data-toggle="tooltip" title="Georreferenciar Documento" href="{% url 'espacial' pk_object=doc.pk obj='documento' %}">add_location</a></td>
-                        {% endif %}
-                        {% if 'espacial.view_elementoespacial' in g_perms %}
-                        {% if doc.espacial.all.count > 0 %}
-                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Visualizar ubicación Documento" href="{% url 'mapping' pk_object=doc.pk obj='documento' %}">map</a></td>
+                            {% if 'documental.delete_documento' in g_perms %}
+                                <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión.">delete</i></td>
+                            {% endif %}
+                            {% if 'calidad.add_chequeo' in g_perms %}
+                                <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión.">playlist_add_check</i></td>
+                            {% endif %}
+                            {% if 'calidad.change_chequeo' in g_perms %}
+                                <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión.">done_all</i></td>
+                            {% endif %}
+                            {% if 'espacial.add_elementoespacial' in g_perms %}
+                                <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión.">add_location</i></td>
+                            {% endif %}
+                            {% if 'espacial.view_elementoespacial' in g_perms %}
+                                {% if doc.espacial.all.count > 0 %}
+                                    <td><a class="material-icons md-18" data-toggle="tooltip" title="Visualizar ubicación Documento" href="{% url 'mapping' pk_object=doc.pk obj='documento' %}">map</a></td>
+                                {% else %}
+                                    <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="Visualizar ubicación Documento">map</i></td>
+                                {% endif %}
+                            {% endif %}
+                            {% if 'mensajes.add_tique' in g_perms %}
+                                <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión.">assignment_late</i></td>
+                            {% endif %}
                         {% else %}
-                            <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="Visualizar ubicación Documento">map</i></td>
+                            {% if 'documental.change_documento' in g_perms %}
+                                <td><a class="material-icons md-18" data-toggle="tooltip" title="Editar datos del Documento" href="{% url 'edita_documento' pk_proy=proyecto.pk pk_doc=doc.pk pk_tique=0 %}">edit</a></td>
+                            {% endif %}
+                            {% if 'documental.delete_documento' in g_perms %}
+                                <td><a class="material-icons md-18" data-toggle="tooltip" title="Eliminar el Documento" href="{% url 'elimina_documento' pk_proy=proyecto.pk pk_doc=doc.pk %}">delete</a></td>
+                            {% endif %}
+                            {% if 'calidad.add_chequeo' in g_perms %}
+                                <td><a class="material-icons md-18" data-toggle="tooltip" title="Asignar Chequeos al Documento" href="{% url 'agrega_chequeo' pk_proy=proyecto.pk pk_doc=doc.pk %}">playlist_add_check</a></td>
+                            {% endif %}
+                            {% if 'calidad.change_chequeo' in g_perms %}
+                                <td><a class="material-icons md-18" data-toggle="tooltip" title="Verificar el Documento" href="{% url 'hace_chequeo' pk_proy=proyecto.pk pk_doc=doc.pk %}">done_all</a></td>
+                            {% endif %}
+                            {% if 'espacial.add_elementoespacial' in g_perms %}
+                                <td><a class="material-icons md-18" data-toggle="tooltip" title="Georreferenciar Documento" href="{% url 'espacial' pk_object=doc.pk obj='documento' %}">add_location</a></td>
+                            {% endif %}
+                            {% if 'espacial.view_elementoespacial' in g_perms %}
+                                {% if doc.espacial.all.count > 0 %}
+                                    <td><a class="material-icons md-18" data-toggle="tooltip" title="Visualizar ubicación Documento" href="{% url 'mapping' pk_object=doc.pk obj='documento' %}">map</a></td>
+                                {% else %}
+                                    <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="Visualizar ubicación Documento">map</i></td>
+                                {% endif %}
+                            {% endif %}
+                            {% if 'mensajes.add_tique' in g_perms %}
+                                <td><a class="material-icons md-18" data-toggle="tooltip" title="Iniciar un Tique" href="{% url 'agrega_tique_doc' pk_proy=proyecto.pk pk_doc=doc.pk %}">assignment_late</a></td>
+                            {% endif %}
                         {% endif %}
-                        {% endif %}
-                        {% if 'mensajes.add_tique' in g_perms %}
-                        <td><a class="material-icons md-18" data-toggle="tooltip" title="Iniciar un Tique" href="{% url 'agrega_tique_doc' pk_proy=proyecto.pk pk_doc=doc.pk %}">assignment_late</a></td>
-                        {% endif %}
-                        {% comment %} <td><a class="material-icons md-18" data-toggle="tooltip" title="Verificar el Documento" href="{% url 'hace_chequeo' pk_proy=proyecto.pk pk_doc=doc.pk %}">place</a></td> {% endcomment %}
                     </tr>
                     {% endfor %}
                     </tbody>
@@ -194,7 +213,7 @@
                                 <td>...</td>
                             {% endif %}
                             {% if file.is_replaced %}
-                                <td class="file_replaced">{{ file.archivo_reemplazado_por }}</td>
+                                <td class="file_replaced">{{ file.archivo_reemplazado_por.get }}</td>
                             {% else %}
                                 <td class="file_replaced">...</td>
                             {% endif %}
@@ -205,24 +224,47 @@
                             {% if 'documental.view_archivo' in g_perms %}
                                 <td><a class="material-icons md-18" data-toggle="tooltip" title="Ver detalles del Archivo" href="{% url 'ver_archivo' pk_proy=proyecto.pk pk_file=file.pk %}">visibility</a></td>
                             {% endif %}
-
-                            {% if 'documental.change_archivo' in g_perms %}
-                                <td><a class="material-icons md-18" data-toggle="tooltip" title="Editar Archivo" href="{% url 'edita_archivo' pk_proy=proyecto.pk pk_file=file.pk %}">edit</a></td>
-                            {% endif %}
-
-                            {% if 'documental.delete_archivo' in g_perms %}
-                                <td><a class="material-icons md-18" data-toggle="tooltip" title="Eliminar Archivo" href="{% url 'elimina_archivo' pk_proy=proyecto.pk pk_file=file.pk %}">delete</a></td>
-                            {% endif %}
-                            {% if 'espacial.add_elementoespacial' in g_perms %}<td><a class="material-icons md-18" data-toggle="tooltip" title="Georreferenciar Documento" href="{% url 'espacial' pk_object=file.pk obj='archivo' %}">add_location</a></td>{% endif %}
-                            {% if 'espacial.view_elementoespacial' in g_perms %}
-                            {% if file.espacial.all.count > 0 %}
-                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Visualizar ubicación Archivo" href="{% url 'mapping' pk_object=file.pk obj='archivo' %}">map</a></td>
+                            {% if file.is_replaced %}
+                                {% if 'documental.change_archivo' in g_perms %}
+                                    <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Archivo ya posee una Revisión">edit</i></td>
+                                {% endif %}
+                                {% if 'documental.delete_archivo' in g_perms %}
+                                    <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Archivo ya posee una Revisión">delete</i></td>
+                                {% endif %}
+                                {% if 'espacial.add_elementoespacial' in g_perms %}
+                                    <td><i class="material-icons md-18 md-18 md-dark md-inactive" data-toggle="tooltip" title="El Archivo ya posee una Revisión">add_location</i></td>
+                                {% endif %}
+                                {% if 'espacial.view_elementoespacial' in g_perms %}
+                                    {% if file.espacial.all.count > 0 %}
+                                        <td><a class="material-icons md-18" data-toggle="tooltip" title="Visualizar ubicación Archivo" href="{% url 'mapping' pk_object=file.pk obj='archivo' %}">map</a></td>
+                                    {% else %}
+                                        <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Archivo no posee Elementos Espaciales">map</i></td>
+                                    {% endif %}
+                                {% endif %}
+                                {% if 'mensajes.add_tique' in g_perms %}
+                                    <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="Iniciar un Tique" href="{% url 'agrega_tique_arch' pk_proy=proyecto.pk pk_file=file.pk %}">assignment_late</i></td>
+                                {% endif %}
                             {% else %}
-                            <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="Visualizar ubicación Archivo">map</i></td>
-                            {% endif %}
-                            {% endif %}
-                            {% if 'mensajes.add_tique' in g_perms %}
-                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Iniciar un Tique" href="{% url 'agrega_tique_arch' pk_proy=proyecto.pk pk_file=file.pk %}">assignment_late</a></td>
+                                {% if 'documental.change_archivo' in g_perms %}
+                                    <td><a class="material-icons md-18" data-toggle="tooltip" title="Editar Archivo" href="{% url 'edita_archivo' pk_proy=proyecto.pk pk_file=file.pk pk_tique=0 %}">edit</a></td>
+                                {% endif %}
+
+                                {% if 'documental.delete_archivo' in g_perms %}
+                                    <td><a class="material-icons md-18" data-toggle="tooltip" title="Eliminar Archivo" href="{% url 'elimina_archivo' pk_proy=proyecto.pk pk_file=file.pk %}">delete</a></td>
+                                {% endif %}
+                                {% if 'espacial.add_elementoespacial' in g_perms %}
+                                    <td><a class="material-icons md-18" data-toggle="tooltip" title="Georreferenciar Documento" href="{% url 'espacial' pk_object=file.pk obj='archivo' %}">add_location</a></td>
+                                {% endif %}
+                                {% if 'espacial.view_elementoespacial' in g_perms %}
+                                    {% if file.espacial.all.count > 0 %}
+                                    <td><a class="material-icons md-18" data-toggle="tooltip" title="Visualizar ubicación Archivo" href="{% url 'mapping' pk_object=file.pk obj='archivo' %}">map</a></td>
+                                    {% else %}
+                                    <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Archivo no posee Elementos Espaciales">map</i></td>
+                                    {% endif %}
+                                {% endif %}
+                                {% if 'mensajes.add_tique' in g_perms %}
+                                    <td><a class="material-icons md-18" data-toggle="tooltip" title="Iniciar un Tique" href="{% url 'agrega_tique_arch' pk_proy=proyecto.pk pk_file=file.pk %}">assignment_late</a></td>
+                                {% endif %}
                             {% endif %}
                         </tr>
                         {% endfor %}

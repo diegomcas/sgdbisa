@@ -2,6 +2,13 @@
 
 {% block contenido %}
 <div class="container-fluid">
+    {% if tiques_user|length == 0 and tiques_abiertos|length == 0 and mensajes|length == 0%}
+        <h5><b>{{request.user.username}}</b>:</h5>
+        <p>No hay actividad en los proyectos en que trabajas.</p>
+        <p>No se registran tiques de tu propiedad.</p>
+        <p>No se registran tiques abiertos.</p>
+        <p>No se registran mensajes nuevos.</p>
+    {% else %}
     <div class="row">
         <div class="col">
             {% if tiques_user|length > 0 %}
@@ -10,23 +17,23 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Tique {{ tq_user.tipo_obj }}: {{ tq_user.obj_name }}</h5>
-                    <p class="card-text">{{ tq_user.tipo_text }}</p>
-                    <p class="card-text">{{ tq_user.descripcion }}</p>
+                    <p class="card-text"><span class=" text-info">({{ tq_user.tipo_text }})</span>
+                    {{ tq_user.descripcion }}</p>
                     <p class="card-text">Fecha emisión: {{ tq_user.fecha_emision }} Fecha adquisición: {{ tq_user.fecha_adquisicion }}</p>
                     {% if tq_user.tipo_obj == 'Documento' %}
                         {% if tq_user.tipo == 'OBS' %}
-                            <a href="{% url 'edita_documento' pk_proy=tq_user.proyecto_pk pk_doc=tq_user.obj_pk %}" class="card-link">Finalizar tique</a>
+                            <a href="{% url 'edita_documento' pk_proy=tq_user.proyecto_pk pk_doc=tq_user.obj_pk pk_tique=tq_user.pk %}" class="card-link">Finalizar tique</a>
                         {% endif %}
                         {% if tq_user.tipo == 'REV' %}
-                            <a href="#" class="card-link">Finalizar tique</a>
+                            <a href="{% url 'revision_documento' pk_proy=tq_user.proyecto_pk pk_doc=tq_user.obj_pk pk_tique=tq_user.pk %}" class="card-link">Finalizar tique</a>
                         {% endif %}
                     {% endif %}
                     {% if tq_user.tipo_obj == 'Archivo' %}
                         {% if tq_user.tipo == 'OBS' %}
-                            <a href="{% url 'edita_archivo' pk_proy=tq_user.proyecto_pk pk_file=tq_user.obj_pk %}" class="card-link">Finalizar tique</a>
+                            <a href="{% url 'edita_archivo' pk_proy=tq_user.proyecto_pk pk_file=tq_user.obj_pk pk_tique=tq_user.pk %}" class="card-link">Finalizar tique</a>
                         {% endif %}
                         {% if tq_user.tipo == 'REV' %}
-                            <a href="#" class="card-link">Finalizar tique</a>
+                        <a href="{% url 'revision_archivo' pk_proy=tq_user.proyecto_pk pk_file=tq_user.obj_pk pk_tique=tq_user.pk %}" class="card-link">Finalizar tique</a>
                         {% endif %}
                     {% endif %}
                 </div>
@@ -36,38 +43,46 @@
         </div>
     </div>
     <hr>
-
+    {% if tiques_abiertos|length > 0 %}
     <div class="row">
         <div class="col-sm-6">
             
-            {% if tiques_abiertos|length > 0 %}
             <h5>Tiques disponibles:</h5>
             {% for tq_open in tiques_abiertos %}
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Tique {{ tq_open.tipo_obj }}: {{ tq_open.obj_name }}</h5>
-                    <p class="card-text">({{ tq_open.tipo_text }}) {{ tq_open.descripcion }}</p>
+                    <p class="card-text"><span class=" text-info">({{ tq_open.tipo_text }})</span> {{ tq_open.descripcion }}</p>
                     <p class="card-text">Fecha emisión: {{ tq_open.fecha_emision }}</p>
                     <a href="{% url 'tomar_tique' pk_tique=tq_open.pk %}" class="card-link">Tomar Tique</a>
                 </div>
             </div>
             {% endfor %}
-            {% endif %}
+
         </div>
+    {% endif %}
+    {% if mensajes|length > 0 %}
         <div class="col-sm-6">
-            {% if mensajes|length > 0 %}
             <h5>Mensajes del sistema:</h5>
             {% for mensaje in mensajes %}
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">{{ mensaje.tipo_obj }}: {{ mensaje.obj_name }}</h5>
                     <p class="card-text">{{ mensaje.mensaje }}</p>
-                    <a href="#" class="card-link">Ver {{ mensaje.tipo_obj }}</a>
+                    <p class="card-text">Fecha emisión: {{ mensaje.fecha }}</p>
+                    {% if mensaje.tipo_obj == 'Documento' %}
+                        <a href="{% url 'ver_documento' pk_proy=mensaje.proyecto_pk pk_doc=mensaje.obj_pk %}" class="card-link">Ver {{ mensaje.tipo_obj }}</a>
+                    {% endif %}
+                    {% if mensaje.tipo_obj == 'Archivo' %}
+                        <a href="{% url 'ver_archivo' pk_proy=mensaje.proyecto_pk pk_file=mensaje.obj_pk %}" class="card-link">Ver {{ mensaje.tipo_obj }}</a>
+                    {% endif %}
+                    <a href="{% url 'marcar_leido' pk_msg=mensaje.pk %}" class="card-link">Marcar como leido</a>
                 </div>
             </div>
             {% endfor %}
-            {% endif %}
         </div>
+    {% endif %}
     </div>
+    {% endif %}
 </div>
 {% endblock %}

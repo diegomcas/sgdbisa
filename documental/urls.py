@@ -38,12 +38,12 @@ urlpatterns = [
         name='nuevo_documento'
     ),
     path(
-        'proyecto/<int:pk_proy>/documento/<int:pk_doc>/update/',
+        'proyecto/<int:pk_proy>/documento/<int:pk_doc>/<int:pk_tique>/update/',
         views.edita_documento,
         name='edita_documento'
     ),
     path(
-        'proyecto/<int:pk_proy>/documento/<int:pk_doc>/revision/',
+        'proyecto/<int:pk_proy>/documento/<int:pk_doc>/<int:pk_tique>/revision/',
         views.revision_documento,
         name='revision_documento'
     ),
@@ -68,9 +68,14 @@ urlpatterns = [
         name='nuevo_archivo'
     ),
     path(
-        'proyecto/<int:pk_proy>/archivo/<int:pk_file>/update/',
+        'proyecto/<int:pk_proy>/archivo/<int:pk_file>/<int:pk_tique>/update/',
         views.edita_archivo,
         name='edita_archivo'
+    ),
+    path(
+        'proyecto/<int:pk_proy>/archivo/<int:pk_file>/<int:pk_tique>/revision/',
+        views.revision_archivo,
+        name='revision_archivo'
     ),
     path(
         'proyecto/<int:pk_proy>/archivo/<int:pk_file>/delete/',

@@ -2,6 +2,7 @@ from django.utils import timezone
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import Tique, TiqueDestinatarios
+from .models import MensajeDestinatarios
 from .forms import TiqueForm
 from documental.models import Archivo, Documento, Proyecto
 
@@ -45,6 +46,7 @@ def agrega_tique_arch(request, pk_proy, pk_file):
         if form.is_valid():
             tique = form.save(commit=False)
             tique.fecha_emision = timezone.now()
+            tique.finalizado = False
             tique.save()
             file.tique.add(tique)
             file.save()
@@ -75,6 +77,7 @@ def agrega_tique_doc(request, pk_proy, pk_doc):
         if form.is_valid():
             tique = form.save(commit=False)
             tique.fecha_emision = timezone.now()
+            tique.finalizado = False
             tique.save()
             doc.tique.add(tique)
             doc.save()
@@ -102,4 +105,11 @@ def tomar_tique(request, pk_tique):
     tique.propietario = request.user
     tique.fecha_adquisicion = timezone.now()
     tique.save()
+    return redirect('index')
+
+def marcar_leido(request, pk_msg):
+    """Marcar el mensaje como leido por el usuario request.user"""
+    msg_dest = MensajeDestinatarios.objects.get(mensaje_id=pk_msg, miembro=request.user)
+    msg_dest.leido = True
+    msg_dest.save()
     return redirect('index')

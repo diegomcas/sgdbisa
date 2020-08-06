@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import ListaChequeo, TipoChequeo, Chequeo
-from documental.models import Documento
+from documental.models import Proyecto, Documento
 from .forms import ListaChequeoForm, TipoChequeoForm
 from .test_perms import list_listas_chequeo, view_lista_chequeo, add_lista_chequeo
 from .test_perms import update_lista_chequeo, delete_lista_chequeo
@@ -264,7 +264,7 @@ def hace_chequeo(request, pk_proy, pk_doc):
     """
     Realiza el control de calidad de un documento a partir de sus chequeos
     """
-    doc = get_object_or_404(Documento, pk=pk_proy)
+    doc = get_object_or_404(Documento, pk=pk_doc)
     chequeos_doc = doc.chequeo_documento.all().order_by('tipo_chequeo')
     # chequeos_doc = Chequeo.objects.filter(documento__pk=pk_doc).order_by('tipo_chequeo')
 
@@ -320,3 +320,30 @@ def elimina_chequeo(request, pk_proy, pk_doc, pk_chk):
     chequeo.delete()
 
     return redirect('agrega_chequeo', pk_proy=pk_proy, pk_doc=pk_doc)
+
+@login_required
+def estado_calidad(request, pk_proy):
+    proyecto = get_object_or_404(Proyecto, pk=pk_proy)
+    docs = Documento.objects.filter(proyecto_id=pk_proy, documento_reemplazado_por=None)
+    estados = []
+    for doc in docs:
+        pasa = True
+        estado = {'no_verificados': []}
+        chks_in_doc = Chequeo.objects.filter(documento=doc)
+        estado['documento'] = doc
+        for chk in chks_in_doc:
+            if chk.aplica and not chk.verificado:
+                pasa = False
+                estado['no_verificados'].append(chk)
+
+        estado['pasa'] = pasa
+        estados.append(estado)
+
+    return render(
+        request,
+        'estado_calidad.html',
+        {
+            'estados': estados,
+            'proyecto': proyecto
+        }
+    )

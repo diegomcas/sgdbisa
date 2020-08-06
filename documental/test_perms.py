@@ -113,7 +113,7 @@ def revision_documento(user):
     Verifica si el usuario, por el grupo al que pertence,
     tiene permisos para revisionar documentos.
     """
-    if 'documental.revision_archivo' in user.get_all_permissions():
+    if 'documental.revision_documento' in user.get_all_permissions():
         return True
 
     return False

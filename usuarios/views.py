@@ -9,7 +9,7 @@ from mensajes.models import Mensaje, Tique, MensajeDestinatarios, TiqueDestinata
 
 def tiques_user_info(prop):
     tiques = []
-    tiques_user = Tique.objects.filter(propietario=prop)
+    tiques_user = Tique.objects.filter(propietario=prop, finalizado=False)
     tiques_user = tiques_user.order_by('fecha_emision').order_by('fecha_adquisicion')
     for tq in tiques_user:
         tique = {}
@@ -69,9 +69,14 @@ def mensajes_info(usuario):
     mensajes = []
     mensajes_dest = MensajeDestinatarios.objects.filter(miembro=usuario, leido=False)
     mensajes_dest = mensajes_dest.order_by('mensaje__fecha')
+    print(mensajes_dest)
     for mensaje_dest in mensajes_dest:
+        print(mensaje_dest.pk)
+        print(mensaje_dest.mensaje)
+        print(mensaje_dest.mensaje.mensaje)
         msg = mensaje_dest.mensaje
         mensaje = {}
+        mensaje['pk'] = msg.pk
         mensaje['mensaje'] = msg.mensaje
         mensaje['fecha'] = msg.fecha
         try:
@@ -81,6 +86,7 @@ def mensajes_info(usuario):
             msg_obj = msg.mensajesarch.get()
             mensaje['tipo_obj'] = 'Archivo'
 
+        mensaje['proyecto_pk'] = msg_obj.proyecto.pk
         mensaje['obj_pk'] = msg_obj.pk
         mensaje['obj_name'] = msg_obj.__str__()
 
@@ -99,12 +105,12 @@ def index(request):
     if request.user.is_authenticated:
         # Tiques tomados por el usuario
         tiques_user = tiques_user_info(request.user)
-        print(tiques_user)
+        # print(tiques_user)
         # Todos los Mensajes del usuario
         mensajes = mensajes_info(request.user)
         # Todos los Tiques del Usuario menos los que tienen propietarios
         tiques_abiertos = tiques_abiertos_info(request.user)
-        print(tiques_abiertos)
+        # print(tiques_abiertos)
 
         # devolvemos la portada
         return render(
