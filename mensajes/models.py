@@ -53,6 +53,7 @@ class Tique(models.Model):
         help_text="Miembro del equipo de trabajo responsable de las correcciones"
     )
     finalizado = models.BooleanField(
+        default=False,
         null=True,
     )
     fecha_emision = models.DateField(

@@ -1,5 +1,6 @@
 from django import forms
 from django.forms import ModelForm, ModelMultipleChoiceField
+from django.db.models import Q
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from .models import Proyecto, Documento, Archivo, User
 
@@ -71,8 +72,19 @@ class DocumentoForm(ModelForm):
     def __init__(self, project, *args, **kwargs):
         super(DocumentoForm, self).__init__(*args, **kwargs)
         self.fields['propietario'].queryset = project.miembros.all()
-        self.fields['refiere_a'].queryset = Documento.objects.filter(proyecto__pk=project.pk)
-        self.fields['compuesto_por'].queryset = Archivo.objects.filter(proyecto__pk=project.pk)
+        if self.instance and self.instance.pk:
+            qsd = Documento.objects.filter(proyecto__pk=project.pk)
+            qsd = qsd.exclude(pk=self.instance.pk)
+            qsd = qsd.exclude(~Q(documento_reemplazado_por=None))
+            self.fields['refiere_a'].queryset = qsd
+        else:
+            qsd = Documento.objects.filter(proyecto__pk=project.pk)
+            qsd = qsd.exclude(~Q(documento_reemplazado_por=None))
+            self.fields['refiere_a'].queryset = qsd
+
+        qsf = Archivo.objects.filter(proyecto__pk=project.pk)
+        qsf = qsf.exclude(~Q(archivo_reemplazado_por=None))
+        self.fields['compuesto_por'].queryset = qsf
         # self.fields['refiere_a'].empty_label = '-------'
         # self.fields['compuesto_por'].empty_label = '-------'
 
@@ -119,9 +131,10 @@ class ArchivoForm(ModelForm):
     def __init__(self, project, *args, **kwargs):
         super(ArchivoForm, self).__init__(*args, **kwargs)
         self.fields['propietario'].queryset = project.miembros.all()
-        self.fields['archivo_compone_a'].queryset = Documento.objects.filter(proyecto__pk=project.pk)
+        qs = Documento.objects.filter(proyecto__pk=project.pk)
+        qs = qs.exclude(~Q(documento_reemplazado_por=None))
+        self.fields['archivo_compone_a'].queryset = qs
 
-        print(self.instance)
         if self.instance and self.instance.pk:
             self.fields['archivo_compone_a'].initial = self.instance.archivos.all()
 

@@ -23,4 +23,19 @@ urlpatterns = [
         views.marcar_leido,
         name='marcar_leido'
     ),
+    path(
+        'proyecto/<int:pk_proy>/management/',
+        views.gestion_tiquet,
+        name='gestion_tiquet'
+    ),
+    path(
+        'proyecto/<int:pk_proy>/tique/<int:pk_tique>/delete/',
+        views.elimina_tique,
+        name='elimina_tique'
+    ),
+    path(
+        'proyecto/<int:pk_proy>/tique/<int:pk_tique>/free/',
+        views.libera_tique,
+        name='libera_tique'
+    ),
 ]

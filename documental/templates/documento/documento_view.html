@@ -23,10 +23,11 @@
         {% if documento.reemplaza_a %}
         <dt>Reemplaza al documento:</dt>
         <dd>- {{ documento.reemplaza_a }}</dd>
+        <dd>- Motivo de la revión: {{ documento.tique_revision|default_if_none:"Generado en una versión anterior" }}</dd>
         {% endif %}
         {% if documento.is_replaced %}
-        <dt>Reemplaza al documento:</dt>
-        <dd>- {{ documento.documento_reemplazado_por }}</dd>
+        <dt>Reemplazado por el documento:</dt>
+        <dd>- {{ documento.documento_reemplazado_por.get }}</dd>
         {% endif %}
         {% if documento.compuesto_por.all.count > 0 %}
         <dt>Archivos que lo componen:</dt>
@@ -34,11 +35,17 @@
         <dd>- {{ archivo }}</dd>
         {% endfor %}
         {% endif %}
-        <dt>Estado de verificación:</dt>
-        {% for chequeo in documento.documento.all %}
-        {% if chequeo.aplica %}
-        <dd>- {{ chequeo }} / Verificado: {{ chequeo.verificado|yesno:"Si,No,No" }} </dd>
+        {% if documento.chequeo_documento.all.count > 0 %}
+            <dt>Estado de verificación:</dt>
+            {% for chequeo in documento.chequeo_documento.all %}
+                {% if chequeo.aplica %}
+                    {% if chequeo.verificado %}
+                        <dd class="text-success">- {{ chequeo }} / Verificado: {{ chequeo.verificado|yesno:"Si,No,No" }} </dd>
+                    {% else %}
+                        <dd class="text-danger">- {{ chequeo }} / Verificado: {{ chequeo.verificado|yesno:"Si,No,No" }} </dd>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
         {% endif %}
-        {% endfor %}
     </dl>
 {% endblock %}

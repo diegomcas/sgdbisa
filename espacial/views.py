@@ -422,6 +422,7 @@ def query_lists(ees):
     documentos = []
     archivos = []
     for ee in ees:
+        print(f'ee.pk={ee.pk}')
         entidad = {}
         try:
             obj = ee.espacialesdoc.get()

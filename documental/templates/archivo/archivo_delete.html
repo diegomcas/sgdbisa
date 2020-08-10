@@ -1,0 +1,25 @@
+{% extends 'template_base.html' %}
+
+{% block contenido %}
+<div class="container-fluid">
+    <h4>Eliminar Archivo "{{ archivo }}" </h4><hr>
+    <dl>
+    {% if archivo.mensaje.all.count > 0 %}
+        <dt>El archivo posee mensajes: </dt>
+        <dd>- {{ archivo.mensaje.all.count }} mensajes serán borrados</dd>
+    {% endif %}
+    {% if archivo.tique.all.count > 0 %}
+        <dt>El archivo posee tiques: </dt>
+        <dd>- {{ archivo.tique.all.count }} tiques serán borrados</dd>
+    {% endif %}
+    {% if archivo.espacial.all.count > 0 %}
+        <dt>El archivo posee Elementos Espaciales: </dt>
+        <dd>- {{ archivo.espacial.all.count }} Elementos Espaciales serán borrados</dd>
+    {% endif %}
+    </dl>
+    <form method="POST" class="post-form">{% csrf_token %}
+        <button type="submit" name='confirma' value='SI' class="btn btn-sm btn-secondary">Borrar</button>
+        <button type="submit" name='confirma' value='NO' class="btn btn-sm btn-secondary">No Borrar</button>
+    </form>
+</div>
+{% endblock %}

@@ -55,7 +55,7 @@
             Mostrar Reemplazados</label><br>
             </div>
         </div>
-        {% if 'documental.add_documento' in g_perms %}
+        {% if 'documental.add_documento' in g_perms and not proyecto.finalizado %}
         <div class="col-sm-3 align-self-center">
             <a href="{% url 'nuevo_documento' pk_proy=proyecto.pk %}" class="btn btn-secondary btn-sm float-md-right">Nuevo Documento</a>
         </div>
@@ -84,8 +84,8 @@
                     </thead>
                     <tbody id="documentsTable">
                     {% for doc in proyecto.documentos_proyecto.all %}
-                    <tr>
-                        <td><div data-toggle="tooltip" title="{{ doc.descripcion }}">{{ doc.numero }}</div></td>
+                    <tr data-toggle="tooltip" title="{{ doc.descripcion }}">
+                        <td>{{ doc.numero }}</td>
                         <td>{{ doc.revision }}</td>
                         {% if doc.reemplaza_a %}
                             <td>{{ doc.reemplaza_a }}</td>
@@ -104,21 +104,21 @@
                         {% if 'documental.view_documento' in g_perms %}
                             <td><a class="material-icons md-18" data-toggle="tooltip" title="ver datos del Documento" href="{% url 'ver_documento' pk_proy=proyecto.pk pk_doc=doc.pk %}">visibility</a></td>
                         {% endif %}
-                        {% if doc.is_replaced %}
+                        {% if doc.is_replaced or proyecto.finalizado %}
                             {% if 'documental.change_documento' in g_perms %}
-                                <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión.">edit</i></td>
+                                <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión o el Proyecto se encuentra finalizado.">edit</i></td>
                             {% endif %}
                             {% if 'documental.delete_documento' in g_perms %}
-                                <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión.">delete</i></td>
+                                <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión o el Proyecto se encuentra finalizado.">delete</i></td>
                             {% endif %}
                             {% if 'calidad.add_chequeo' in g_perms %}
-                                <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión.">playlist_add_check</i></td>
+                                <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión o el Proyecto se encuentra finalizado.">playlist_add_check</i></td>
                             {% endif %}
                             {% if 'calidad.change_chequeo' in g_perms %}
-                                <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión.">done_all</i></td>
+                                <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión o el Proyecto se encuentra finalizado.">done_all</i></td>
                             {% endif %}
                             {% if 'espacial.add_elementoespacial' in g_perms %}
-                                <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión.">add_location</i></td>
+                                <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión o el Proyecto se encuentra finalizado.">add_location</i></td>
                             {% endif %}
                             {% if 'espacial.view_elementoespacial' in g_perms %}
                                 {% if doc.espacial.all.count > 0 %}
@@ -128,7 +128,7 @@
                                 {% endif %}
                             {% endif %}
                             {% if 'mensajes.add_tique' in g_perms %}
-                                <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión.">assignment_late</i></td>
+                                <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Documento ya posee una revisión o el Proyecto se encuentra finalizado.">assignment_late</i></td>
                             {% endif %}
                         {% else %}
                             {% if 'documental.change_documento' in g_perms %}
@@ -179,7 +179,7 @@
             Mostrar Reemplazados</label><br>
             </div>
         </div>
-        {% if 'documental.add_archivo' in g_perms %}
+        {% if 'documental.add_archivo' in g_perms and not proyecto.finalizado %}
         <div class="col-sm-3 align-self-center">
             <a href="{% url 'nuevo_archivo' pk_proy=proyecto.pk %}" class="btn btn-secondary btn-sm float-md-right">Nuevo Archivo</a>
         </div>
@@ -204,8 +204,8 @@
                     </tr></thead>
                     <tbody id="filesTable">
                     {% for file in proyecto.archivos_proyecto.all %}
-                        <tr>
-                            <td><div data-toggle="tooltip" title="{{ file.descripcion }}">{{ file.nombre_archivo }}</div></td>
+                        <tr data-toggle="tooltip" title="{{ file.descripcion }}">
+                            <td>{{ file.nombre_archivo }}</td>
                             <td>{{ file.revision }}</td>
                             {% if file.reemplaza_a %}
                                 <td>{{ file.reemplaza_a }}</td>
@@ -224,15 +224,15 @@
                             {% if 'documental.view_archivo' in g_perms %}
                                 <td><a class="material-icons md-18" data-toggle="tooltip" title="Ver detalles del Archivo" href="{% url 'ver_archivo' pk_proy=proyecto.pk pk_file=file.pk %}">visibility</a></td>
                             {% endif %}
-                            {% if file.is_replaced %}
+                            {% if file.is_replaced or proyecto.finalizado %}
                                 {% if 'documental.change_archivo' in g_perms %}
-                                    <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Archivo ya posee una Revisión">edit</i></td>
+                                    <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Archivo ya posee una revisión o el Proyecto se encuentra finalizado.">edit</i></td>
                                 {% endif %}
                                 {% if 'documental.delete_archivo' in g_perms %}
-                                    <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Archivo ya posee una Revisión">delete</i></td>
+                                    <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Archivo ya posee una revisión o el Proyecto se encuentra finalizado.">delete</i></td>
                                 {% endif %}
                                 {% if 'espacial.add_elementoespacial' in g_perms %}
-                                    <td><i class="material-icons md-18 md-18 md-dark md-inactive" data-toggle="tooltip" title="El Archivo ya posee una Revisión">add_location</i></td>
+                                    <td><i class="material-icons md-18 md-18 md-dark md-inactive" data-toggle="tooltip" title="El Archivo ya posee una revisión o el Proyecto se encuentra finalizado.">add_location</i></td>
                                 {% endif %}
                                 {% if 'espacial.view_elementoespacial' in g_perms %}
                                     {% if file.espacial.all.count > 0 %}
@@ -242,7 +242,7 @@
                                     {% endif %}
                                 {% endif %}
                                 {% if 'mensajes.add_tique' in g_perms %}
-                                    <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="Iniciar un Tique" href="{% url 'agrega_tique_arch' pk_proy=proyecto.pk pk_file=file.pk %}">assignment_late</i></td>
+                                    <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Proyecto se encuentra finalizado.">assignment_late</i></td>
                                 {% endif %}
                             {% else %}
                                 {% if 'documental.change_archivo' in g_perms %}

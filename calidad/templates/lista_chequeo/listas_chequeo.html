@@ -28,8 +28,8 @@
             </thead>
             <tbody id="listaChequeoTable">
             {% for lstchk in lst_chequeo %}
-            <tr>
-                <td><div data-toggle="tooltip" title="{{ lstchk.descripcion }}">{{ lstchk }}</div></td>
+            <tr data-toggle="tooltip" title="{{ lstchk.descripcion }}">
+                <td>{{ lstchk }}</td>
                 <td>{{ lstchk.area }}</td>
                 <td>{{ lstchk.tipo_documento }}</td>
                 <td>{{ lstchk.nombre }}</td>

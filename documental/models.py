@@ -172,6 +172,15 @@ class Documento(models.Model):
         related_name='tiquesdoc',
         help_text="Mensajes de actividad sobre el documento"
     )
+    tique_revision = models.ForeignKey(
+        'mensajes.Tique',
+        related_name='documento_tique_revisado',
+        default=None,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        help_text="Tique que generó la revisión"
+    )
 
     class Meta:
         indexes = [
@@ -277,9 +286,8 @@ class Documento(models.Model):
             doc_ref_this.refiere_a.remove(self)
             doc_ref_this.refiere_a.add(new_doc)
 
-        # Tiques abierto pertenecientes a self se pasan a new_doc
-        # tique_open = self.tique.filter(finalizado=False)
-        # new_doc.tique.add(tique_open)
+        # Tiques abierto pertenecientes a self se eliminan
+        # tique_open = self.tique.filter(finalizado=False).delete()
         # self.tique.clear()
         return new_doc
 
@@ -410,7 +418,16 @@ class Archivo(models.Model):
         'mensajes.Tique',
         blank=True,
         related_name='tiquesarch',
-        help_text="Mensajes de actividad sobre el documento"
+        help_text="Tiques del Archivo"
+    )
+    tique_revision = models.ForeignKey(
+        'mensajes.Tique',
+        related_name='archivo_tique_revisado',
+        default=None,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        help_text="Tique que generó la revisión"
     )
 
     class Meta:
@@ -505,8 +522,8 @@ class Archivo(models.Model):
             doc_ref_this.compuesto_por.remove(self)
             doc_ref_this.compuesto_por.add(new_file)
 
-        # Tiques abierto pertenecientes a self se pasan a new_file
-        # tique_open = self.tique.filter(finalizado=False)
+        # Tiques abierto pertenecientes a self se eliminan
+        # tique_open = self.tique.filter(finalizado=False).delete()
         # new_file.tique.add(tique_open)
         # self.tique.clear()
 

@@ -2,7 +2,7 @@
 
 {% block contenido %}
 <div class="container-fluid">
-    <h4>Detalles del Documento {{archivo}}</h4><hr>
+    <h4>Detalles del Archivo {{archivo}}</h4><hr>
     <dl>
         <dt>Directorio del archivo:</dt>
         <dd>- {{ archivo.directorio }}</dd>
@@ -17,15 +17,18 @@
         {% if archivo.reemplaza_a %}
         <dt>Reemplaza al archivo:</dt>
         <dd>- {{ archivo.reemplaza_a }}</dd>
+        <dd>- Motivo de la revión: {{ archivo.tique_revision|default_if_none:"Generado en una versión anterior" }}</dd>
         {% endif %}
         {% if archivo.is_replace %}
-        <dt>Reemplaza al documento:</dt>
-        <dd>- {{ archivo.archivo_reemplazado_por }}</dd>
+        <dt>Reemplazado por archivo:</dt>
+        <dd>- {{ archivo.archivo_reemplazado_por.get }}</dd>
         {% endif %}
         {% if archivo.archivos.all.count > 0 %}
         <dt>Documentos que compone:</dt>
-        {% for archivo in archivo.archivos.all %}
-        <dd>- {{ archivo }}</dd>
+        {% for doc in archivo.archivos.all %}
+        {% if not doc.is_replaced %}
+        <dd>- {{ doc }}</dd>
+        {% endif %}
         {% endfor %}
         {% endif %}
     </dl>

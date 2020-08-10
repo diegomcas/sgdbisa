@@ -1,0 +1,78 @@
+{% extends 'template_base.html' %}
+
+{% block contenido %}
+<div class="container-fluid">
+    <h4>Tiques del Proyectos {{ proyecto }}</h4><hr>
+    <div class="row">
+        <div class="col-sm-10">
+            <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Buscar...">
+        </div>
+    </div>
+    <div>
+        <table class="table table-hover table-sm" style="font-size: 12px">
+            <thead>
+                <tr>
+                    <th>Elemento</th>
+                    <th>Tipo</th>
+                    <th>Fecha emisión</th>
+                    <th>Fecha adquisición</th>
+                    <th>Fecha de finalización</th>
+                    <th>Finalizado</th>
+                    <th>Tipo Tique</th>
+                    <th>Propietario</th>
+                    {% if 'mensajes.change_tique' in g_perms %}<th> </th>{% endif %}
+                    {% if 'mensajes.delete_tique' in g_perms %}<th> </th>{% endif %}
+                </tr>
+            </thead>
+            <tbody id="tiquesTable">
+            {% for tique in tiques %}
+            <tr data-toggle="tooltip" title="{{ tique.descripcion }}">
+                <td>{{ tique.elemento }}</td>
+                <td>{{ tique.tipo }}</td>
+                <td>{{ tique.emision }}</td>
+                <td>{{ tique.adquisicion|default_if_none:"sin propietario" }}</td>
+                <td>{{ tique.finalizacion|default_if_none:"no finalizado" }}</td>
+                <td>{{ tique.finalizado|yesno:"SI,NO,MAL" }}</td>
+                <td>{{ tique.tt }}</td>
+                <td>{{ tique.propietario|default_if_none:"no asignado"}}</td>
+                {% if tique.finalizado %}
+                    <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="Liberar el Tique">rule</i></td>
+                    <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="Eliminar el Tique">delete</i></td>
+                {% else %}
+                    {% if 'mensajes.change_tique' in g_perms %}
+                        {% if tique.propietario %}
+                            <td><a class="material-icons md-18" data-toggle="tooltip" title="Liberar el Tique" href="{% url 'libera_tique' pk_proy=proyecto.pk pk_tique=tique.pk %}">rule</a></td>
+                        {% else %}
+                            <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="Liberar el Tique">rule</i></td>
+                        {% endif %}
+                    {% endif %}
+                    {% if 'mensajes.delete_tique' in g_perms %}
+                        <td><a class="material-icons md-18" data-toggle="tooltip" title="Eliminar el Tique" href="{% url 'elimina_tique' pk_proy=proyecto.pk pk_tique=tique.pk %}">delete</a></td>
+                    {% endif %}
+                {% endif %}
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+    <script>
+        function onOff(tableRow) {
+            var value = $("#searchInput").val().toLowerCase();
+            //alert($("#finalized").is(':checked'));
+            if ( (tableRow.text().toLowerCase().indexOf(value) > -1) ) {
+                tableRow.show();
+            } else { // No mostrar
+                tableRow.hide();
+            }
+        }
+
+        $(document).ready(function(){
+            $("#searchInput").on("keyup", function() {
+                $("#tiquesTable tr").filter(function() {
+                    onOff($(this));
+                });
+            });
+        });
+    </script>
+{% endblock %}

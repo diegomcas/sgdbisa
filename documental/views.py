@@ -1,9 +1,10 @@
 from django.utils import timezone
 from django.shortcuts import render, get_object_or_404, redirect
+from django.db import IntegrityError, DatabaseError, transaction
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import Proyecto, Documento, Archivo
 from calidad.models import Chequeo
-from mensajes.models import Tique, Mensaje, MensajeDestinatarios
+from mensajes.models import Tique, Mensaje, MensajeDestinatarios, TiqueDestinatarios
 from .forms import ProyectoForm, DocumentoForm, ArchivoForm
 from .test_perms import list_proyectos, finalize_proyecto, view_proyecto, add_proyecto, update_proyecto
 from .test_perms import list_documentos, view_documento, add_documento, update_documento
@@ -36,7 +37,8 @@ def proyectos(request):
     """
     Presenta la lista completa de Proyectos existentes en el sistema
     """
-    projs = Proyecto.objects.all().order_by('fecha')
+    projs = Proyecto.objects.all().order_by('fecha', 'orden_trabajo')
+
     return render(
         request,
         'proyectos.html',
@@ -46,6 +48,15 @@ def proyectos(request):
         }
     )
 
+def tiques_open(proyecto):
+    # Documentos->tiques
+    tiques_doc = Tique.objects.filter(finalizado=False)
+    tiques_doc = tiques_doc.filter(tiquesdoc__in=Documento.objects.filter(proyecto=proyecto))
+    # Archivos->tiques
+    tiques_file = Tique.objects.filter(finalizado=False)
+    tiques_file = tiques_file.filter(tiquesarch__in=Archivo.objects.filter(proyecto=proyecto))
+
+    return {'tiques_doc': tiques_doc, 'tiques_file': tiques_file}
 
 @user_passes_test(finalize_proyecto)
 @login_required
@@ -55,13 +66,20 @@ def finalizar_proyecto(request, primary_key):
     Asigna True a la propiedad 'finalizado' del Proyecto
     """
     proj = get_object_or_404(Proyecto, pk=primary_key)
-    # ToDo: verificar que no existan tiques abiertos!!!
+
+    if request.method == "POST":
+        if request.POST.get('confirma') == 'SI':
+            proj.finalizado = True
+            proj.save()
+
+        return redirect('proyectos')
+
     return render(
         request,
         'finalizar_proyecto.html',
         {
+            'tiques': tiques_open(proj),
             'proyecto': proj,
-            'g_perms': request.user.get_all_permissions()
         }
     )
 
@@ -73,7 +91,7 @@ def finalizar_proyecto(request, primary_key):
 def ver_proyecto(request, primary_key):
     """
     Muestra información del proyecto 'primary_key'
-    y los documentos relacionados.
+    y los documentos y archivos relacionados.
     """
     proyecto = get_object_or_404(Proyecto, pk=primary_key)
 
@@ -163,7 +181,7 @@ def nuevo_documento(request, pk_proy):
             documento = form.save(commit=False)
             documento.proyecto = project
             doc = form.save()
-            emitir_mensaje(doc, 'Se a creado un nuevo Documento')
+            emitir_mensaje(doc, 'Se a creado el Documento')
 
             return redirect('ver_proyecto', primary_key=pk_proy)
     else:
@@ -189,7 +207,7 @@ def edita_documento(request, pk_proy, pk_doc, pk_tique):
         form = DocumentoForm(proj, request.POST, instance=doc)
         if form.is_valid():
             doc = form.save()
-            emitir_mensaje(doc, 'Se a modificado un nuevo Documento')
+            emitir_mensaje(doc, 'Se a modificado el Documento')
             if pk_tique > 0:
                 tique = get_object_or_404(Tique, pk=pk_tique)
                 tique.finalizado = True
@@ -215,9 +233,9 @@ def revision_documento(request, pk_proy, pk_doc, pk_tique):
     Crea una revisión del documento 'pk_doc'
     """
     doc_a_revisionar = get_object_or_404(Documento, pk=pk_doc)
-    doc_revision = doc_a_revisionar.make_revision_doc()
 
     if request.method == "POST":
+        doc_revision = doc_a_revisionar.documento_reemplazado_por.get()
         form = DocumentoForm(doc_revision.proyecto, request.POST, instance=doc_revision)
         if form.is_valid():
             doc_revision = form.save()
@@ -229,11 +247,16 @@ def revision_documento(request, pk_proy, pk_doc, pk_tique):
                 tique.finalizado = True
                 tique.fecha_finalización = timezone.now()
                 tique.save()
+                doc_revision.tique_revision = tique
+                doc_revision.save()
+                # Tiques abiertos pertenecientes a doc_a_revisionar se eliminan
+                doc_a_revisionar.tique.filter(finalizado=False).delete()
                 return redirect('index')
             else:
                 return redirect('ver_proyecto', primary_key=pk_proy)
 
     else:
+        doc_revision = doc_a_revisionar.make_revision_doc()
         form = DocumentoForm(doc_revision.proyecto, instance=doc_revision)
 
     return render(
@@ -250,10 +273,9 @@ def revision_archivo(request, pk_proy, pk_file, pk_tique):
     Crea una revisión del archivo 'pk_file'
     """
     file_a_revisionar = get_object_or_404(Archivo, pk=pk_file)
-    file_revision = file_a_revisionar.make_revision_file()
-
     if request.method == "POST":
-        form = DocumentoForm(file_revision.proyecto, request.POST, instance=file_revision)
+        file_revision = file_a_revisionar.archivo_reemplazado_por.get()
+        form = ArchivoForm(file_revision.proyecto, request.POST, instance=file_revision)
         if form.is_valid():
             file_revision = form.save()
             # Emitir mensaje
@@ -264,23 +286,69 @@ def revision_archivo(request, pk_proy, pk_file, pk_tique):
                 tique.finalizado = True
                 tique.fecha_finalización = timezone.now()
                 tique.save()
+                file_revision.tique_revision = tique
+                file_revision.save()
+                # Tiques abiertos pertenecientes a file_a_revisionar se eliminan
+                file_a_revisionar.tique.filter(finalizado=False).delete()
                 return redirect('index')
             else:
                 return redirect('ver_proyecto', primary_key=pk_proy)
 
     else:
-        form = DocumentoForm(file_revision.proyecto, instance=file_revision)
+        file_revision = file_a_revisionar.make_revision_file()
+        form = ArchivoForm(file_revision.proyecto, instance=file_revision)
 
     return render(
         request,
-        'documento.html',
+        'archivo.html',
         {'form': form}
     )
 
 @user_passes_test(delete_documento)
 @login_required
-def elimina_documento(request):
-    pass
+def elimina_documento(request, pk_proy, pk_doc):
+    """
+    Renderiza una página de confirmación si no hay request.POST
+    y request.POST['confirma'] es vacío o 'NO'
+    Elimina el documento pk_doc.
+    - Elimina los mensajes asociados al documento
+        - Primero elimina las entradas a mensajes_destinatarios del documento
+    - Elimina los tiques:
+        - Primero elimina las entradas a tiques destinatarios
+    - Elimina los elementos_espaciales asociados al documento
+    """
+    documento = get_object_or_404(Documento, pk=pk_doc)
+
+    if request.method == "POST":
+        if request.POST.get('confirma') == 'SI':
+            # Borrar el documento
+            doc_msgs = documento.mensaje.all()
+            msg_dest = MensajeDestinatarios.objects.filter(mensaje__in=doc_msgs)
+            doc_tqs = documento.tique.all()
+            tqs_dest = TiqueDestinatarios.objects.filter(tique__in=doc_tqs)
+            doc_ees = documento.espacial.all()
+            chequeos = documento.chequeo_documento.all()
+
+            try:
+                with transaction.atomic():
+                    chequeos.delete()
+                    doc_ees.delete()
+                    tqs_dest.delete()
+                    doc_tqs.delete()
+                    msg_dest.delete()
+                    doc_msgs.delete()
+                    documento.delete()
+            except IntegrityError as ie:
+                print(ie.values)
+
+        # Redirect a ver_proyecto
+        return redirect('ver_proyecto', primary_key=pk_proy)
+
+    return render(
+        request,
+        'documento_delete.html',
+        {'documento': documento}
+    )
 
 
 @user_passes_test(list_archivos)
@@ -332,7 +400,7 @@ def nuevo_archivo(request, pk_proy):
             archivo = form.save(commit=False)
             archivo.proyecto = project
             file = form.save()
-            emitir_mensaje(file, 'Se a creado un nuevo Archivo')
+            emitir_mensaje(file, 'Se a creado el Archivo')
             return redirect('ver_proyecto', primary_key=pk_proy)
     else:
         form = ArchivoForm(project)
@@ -355,7 +423,7 @@ def edita_archivo(request, pk_proy, pk_file, pk_tique):
             archivo = form.save(commit=False)
             archivo.proyecto = project
             file = form.save()
-            emitir_mensaje(file, 'Se a modificado un Archivo')
+            emitir_mensaje(file, 'Se a modificado el Archivo')
             if pk_tique > 0:
                 tique = get_object_or_404(Tique, pk=pk_tique)
                 tique.finalizado = True
@@ -373,4 +441,43 @@ def edita_archivo(request, pk_proy, pk_file, pk_tique):
 @user_passes_test(delete_archivo)
 @login_required
 def elimina_archivo(request, pk_proy, pk_file):
-    pass
+    """
+    Renderiza una página de confirmación si no hay request.POST
+    y request.POST['confirma'] es vacío o 'NO'
+    Elimina el archivo pk_file.
+    - Elimina los mensajes asociados al archivo
+        - Primero elimina las entradas a mensajes_destinatarios del archivo
+    - Elimina los tiques:
+        - Primero elimina las entradas a tiques destinatarios
+    - Elimina los elementos_espaciales asociados al archivo
+    """
+    archivo = get_object_or_404(Archivo, pk=pk_file)
+
+    if request.method == "POST":
+        if request.POST.get('confirma') == 'SI':
+            # Borrar el archivo
+            file_msgs = archivo.mensaje.all()
+            msg_dest = MensajeDestinatarios.objects.filter(mensaje__in=file_msgs)
+            file_tqs = archivo.tique.all()
+            tqs_dest = TiqueDestinatarios.objects.filter(tique__in=file_tqs)
+            file_ees = archivo.espacial.all()
+
+            try:
+                with transaction.atomic():
+                    file_ees.delete()
+                    tqs_dest.delete()
+                    file_tqs.delete()
+                    msg_dest.delete()
+                    file_msgs.delete()
+                    archivo.delete()
+            except IntegrityError as ie:
+                print(ie.values)
+
+        # Redirect a ver_proyecto
+        return redirect('ver_proyecto', primary_key=pk_proy)
+
+    return render(
+        request,
+        'archivo_delete.html',
+        {'archivo': archivo}
+    )

@@ -16,7 +16,7 @@
             {% for tq_user in tiques_user %}
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Tique {{ tq_user.tipo_obj }}: {{ tq_user.obj_name }}</h5>
+                    <h5 class="card-title">Tique {{ tq_user.tipo_obj }}: {{ tq_user.obj_name }} (Proyecto: {{ tq_user.proyecto_ot }})</h5>
                     <p class="card-text"><span class=" text-info">({{ tq_user.tipo_text }})</span>
                     {{ tq_user.descripcion }}</p>
                     <p class="card-text">Fecha emisión: {{ tq_user.fecha_emision }} Fecha adquisición: {{ tq_user.fecha_adquisicion }}</p>
@@ -51,7 +51,7 @@
             {% for tq_open in tiques_abiertos %}
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Tique {{ tq_open.tipo_obj }}: {{ tq_open.obj_name }}</h5>
+                    <h5 class="card-title">Tique {{ tq_open.tipo_obj }}: {{ tq_open.obj_name }} (Proyecto: {{ tq_open.proyecto_ot }})</h5>
                     <p class="card-text"><span class=" text-info">({{ tq_open.tipo_text }})</span> {{ tq_open.descripcion }}</p>
                     <p class="card-text">Fecha emisión: {{ tq_open.fecha_emision }}</p>
                     <a href="{% url 'tomar_tique' pk_tique=tq_open.pk %}" class="card-link">Tomar Tique</a>
@@ -67,9 +67,9 @@
             {% for mensaje in mensajes %}
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">{{ mensaje.tipo_obj }}: {{ mensaje.obj_name }}</h5>
+                    <h5 class="card-title">{{ mensaje.tipo_obj }}: {{ mensaje.obj_name }} (Proyecto: {{ mensaje.proyecto_ot }})</h5>
                     <p class="card-text">{{ mensaje.mensaje }}</p>
-                    <p class="card-text">Fecha emisión: {{ mensaje.fecha }}</p>
+                    <p class="card-text">Fecha: {{ mensaje.fecha }}</p>
                     {% if mensaje.tipo_obj == 'Documento' %}
                         <a href="{% url 'ver_documento' pk_proy=mensaje.proyecto_pk pk_doc=mensaje.obj_pk %}" class="card-link">Ver {{ mensaje.tipo_obj }}</a>
                     {% endif %}

@@ -1,5 +1,23 @@
 {% extends 'template_base.html' %}
 
 {% block contenido %}
-<h4>Finalizar Proyecto</h4><hr>
+<div class="container-fluid">
+    <h4>Finalizar Proyecto {{ proyecto }}</h4><hr>
+    
+    {% if tiques.tiques_doc.count > 0 or tiques.tiques_file.count > 0 %}
+        <dl>
+        <dt>El proyecto no puede finalizarse puesto que tiene tiques asociados: </dt>
+        <dd>- {{ tiques.tiques_doc.count }} tiques en documentos</dd>
+        <dd>- {{ tiques.tiques_file.count }} tiques en archivos</dd>
+        </dl>
+        <form method="POST" class="post-form">{% csrf_token %}
+            <button type="submit" name='confirma' value='OK' class="btn btn-sm btn-secondary">De acuerdo</button>
+        </form>
+    {% else %}
+    <form method="POST" class="post-form">{% csrf_token %}
+        <button type="submit" name='confirma' value='SI' class="btn btn-sm btn-secondary">Finalizar</button>
+        <button type="submit" name='confirma' value='NO' class="btn btn-sm btn-secondary">No Finalizar</button>
+    </form>
+    {% endif %}
+</div>
 {% endblock %}

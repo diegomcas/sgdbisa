@@ -28,6 +28,7 @@ def tiques_user_info(prop):
             tique['tipo_obj'] = 'Archivo'
 
         tique['proyecto_pk'] = tq_obj.proyecto.pk
+        tique['proyecto_ot'] = tq_obj.proyecto.__str__()
         tique['obj_pk'] = tq_obj.pk
         tique['obj_name'] = tq_obj.__str__()
 
@@ -58,6 +59,7 @@ def tiques_abiertos_info(usuario):
             tique['tipo_obj'] = 'Archivo'
 
         tique['proyecto_pk'] = tq_obj.proyecto.pk
+        tique['proyecto_ot'] = tq_obj.proyecto.__str__()
         tique['obj_pk'] = tq_obj.pk
         tique['obj_name'] = tq_obj.__str__()
 
@@ -87,6 +89,7 @@ def mensajes_info(usuario):
             mensaje['tipo_obj'] = 'Archivo'
 
         mensaje['proyecto_pk'] = msg_obj.proyecto.pk
+        mensaje['proyecto_ot'] = msg_obj.proyecto.__str__()
         mensaje['obj_pk'] = msg_obj.pk
         mensaje['obj_name'] = msg_obj.__str__()
 

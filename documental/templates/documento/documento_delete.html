@@ -1,0 +1,29 @@
+{% extends 'template_base.html' %}
+
+{% block contenido %}
+<div class="container-fluid">
+    <h4>Eliminar Documento "{{ documento }}" </h4><hr>
+    <dl>
+    {% if documento.mensaje.all.count > 0 %}
+        <dt>El documento posee mensajes: </dt>
+        <dd>- {{ documento.mensaje.all.count }} mensajes serán borrados</dd>
+    {% endif %}
+    {% if documento.tique.all.count > 0 %}
+        <dt>El documento posee tiques: </dt>
+        <dd>- {{ documento.tique.all.count }} tiques serán borrados</dd>
+    {% endif %}
+    {% if documento.espacial.all.count > 0 %}
+        <dt>El documento posee Elementos Espaciales: </dt>
+        <dd>- {{ documento.espacial.all.count }} Elementos Espaciales serán borrados</dd>
+    {% endif %}
+    {% if documento.chequeo_documento.all.count > 0 %}
+        <dt>El documento posee Chequeos: </dt>
+        <dd>- {{ documento.chequeo_documento.all.count }} Chequeos serán borrados</dd>
+    {% endif %}
+    </dl>
+    <form method="POST" class="post-form">{% csrf_token %}
+        <button type="submit" name='confirma' value='SI' class="btn btn-sm btn-secondary">Borrar</button>
+        <button type="submit" name='confirma' value='NO' class="btn btn-sm btn-secondary">No Borrar</button>
+    </form>
+</div>
+{% endblock %}

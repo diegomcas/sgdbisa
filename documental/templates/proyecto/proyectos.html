@@ -28,13 +28,13 @@
                     {% if 'documental.view_proyecto' in g_perms %}<th> </th>{% endif %}
                     {% if 'documental.change_proyecto' in g_perms %}<th> </th>{% endif %}
                     <th> </th>
+                    {% if 'mensajes.add_tique' in g_perms %}<th> </th>{% endif %}
                     {% if 'documental.finalize_proyecto' in g_perms %}<th> </th>{% endif %}
-                    <th> </th>
                 </tr>
             </thead>
             <tbody id="projectsTable">
             {% for pr in proyectos %}
-            <tr>
+            <tr data-toggle="tooltip" title="{{ pr.descripcion }}">
                 <td>{{ pr.orden_trabajo }}</td>
                 <td>{{ pr.fecha }}</td>
                 <td>{{ pr.directorio }}</td>
@@ -48,13 +48,29 @@
                 {% endif %}
 
                 {% if 'documental.change_proyecto' in g_perms %}
-                    <td><a class="material-icons md-18" data-toggle="tooltip" title="Editar Proyecto" href="{% url 'edita_proyecto' primary_key=pr.pk %}">edit</a></td>
+                    {% if pr.finalizado %}
+                        <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="Proyecto Finalizado">edit</i></td>
+                    {% else %}
+                        <td><a class="material-icons md-18" data-toggle="tooltip" title="Editar Proyecto" href="{% url 'edita_proyecto' primary_key=pr.pk %}">edit</a></td>
+                    {% endif %}
                 {% endif %}
 
                 <td><a class="material-icons md-18" data-toggle="tooltip" title="Ver estado de control de calidad de Documentos" href="{% url 'estado_calidad' pk_proy=pr.pk %}">check_box</a></td>
 
+                {% if 'mensajes.add_tique' in g_perms %}
+                    {% if pr.finalizado %}
+                        <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="Proyecto Finalizado">assignment_late</i></td>
+                    {% else %}
+                        <td><a class="material-icons md-18" data-toggle="tooltip" title="Gestión de Tiques del Proyecto" href="{% url 'gestion_tiquet' pk_proy=pr.pk %}">assignment_late</a></td>
+                    {% endif %}
+                {% endif %}
+
                 {% if 'documental.finalize_proyecto' in g_perms %}
-                    <td><a class="material-icons md-18" data-toggle="tooltip" title="Finalizar Proyecto" href="{% url 'finalizar_proyecto' primary_key=pr.pk %}">toggle_off</a></td>
+                    {% if pr.finalizado %}
+                        <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="Proyecto Finalizado">toggle_off</i></td>
+                    {% else %}
+                        <td><a class="material-icons md-18" data-toggle="tooltip" title="Finalizar Proyecto" href="{% url 'finalizar_proyecto' primary_key=pr.pk %}">toggle_off</a></td>
+                    {% endif %}
                 {% endif %}
             </tr>
             {% endfor %}
