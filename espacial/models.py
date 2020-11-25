@@ -1,7 +1,6 @@
 from django.contrib.gis.db import models
 
 
-# Create your models here.
 class ElementoEspacial(models.Model):
     PUNTOS = 'PT'
     POLIGONO = 'PL'

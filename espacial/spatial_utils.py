@@ -4,40 +4,18 @@ from documental.models import Proyecto, Documento, Archivo
 class JsLayer:
     """
     Genera las capas de Leaflet a partir de objetos:
-    - Proyecto/s
-    - Documento/s
-    - Archivos
+    - Proyecto
+    - Documento
+    - Archivo
     """
     def __init__(self, objects):
         self.objects = objects
         self.total_geom = GeometryCollection()
         self.leaflet_dict = {}
 
-    def pru(self, lst_docs_layers, lst_files_layers):
-        dic_docs_node = {
-            'label': 'Documentos',
-            'selectAllCheckbox': 'true',
-            'children': lst_docs_layers
-        }
-
-        dic_files_node = {
-            'label': 'Archivos',
-            'selectAllCheckbox': 'true',
-            'children': lst_files_layers
-        }
-
-        lst_project_childrens = [
-            dic_docs_node,
-            dic_files_node
-        ]
-
-        project_format = {
-            'label': '',
-            'selectAllCheckbox': 'true',
-            'children': lst_project_childrens
-        }
-
-        print(project_format)
+    def leaflet_str(self):
+        dict2str = str(self.leaflet_dict)
+        return dict2str.replace('\'', '')
 
     def make_layers(self):
         layers_docs = None
@@ -69,24 +47,24 @@ class JsLayer:
                 self.leaflet_dict = self.object_node(self.objects)
                 if layers_docs is not None:
                     doc_node = self.generic_node('Documentos')
-                    doc_node['children'] = [layers_docs]
-                    self.leaflet_dict['children'] = [doc_node]
+                    doc_node['children'] = layers_docs
+                    self.leaflet_dict['children'].append(doc_node)
                 if layers_files is not None:
                     file_node = self.generic_node('Archivos')
-                    file_node['children'] = [layers_files]
-                    self.leaflet_dict['children'] = [file_node]
+                    file_node['children'] = layers_files
+                    self.leaflet_dict['children'].append(file_node)
 
         if type(self.objects) == Documento:
             layer_doc = self.document2layers(self.objects, True)
             if layer_doc is not None:
-                proyecto = self.objects.proyecto.get()
+                proyecto = self.objects.proyecto
                 self.leaflet_dict = self.object_node(proyecto)
                 self.leaflet_dict['children'] = [layer_doc]
 
         if type(self.objects) == Archivo:
-            layer_file = self.document2layers(self.objects)
+            layer_file = self.archivo2layer(self.objects)
             if layer_file is not None:
-                proyecto = self.objects.proyecto.get()
+                proyecto = self.objects.proyecto
                 self.leaflet_dict = self.object_node(proyecto)
                 self.leaflet_dict['children'] = [layer_file]
 
@@ -115,51 +93,66 @@ class JsLayer:
 
         return generic_node
 
-    def ee2layer(self, ee, title):
+    def ee2layer(self, ee, title, file=False):
         if len(ee) > 1:  # Puntos
             desc = f'{title} (Puntos)'
-            return self.points2layer(ee, desc)
+            return self.points2layer(ee, desc, file)
         elif len(ee) == 1:
             if ee[0].tipo_elemento == 'PL':
                 desc = f'{title} (Polígono)'
                 self.total_geom.append(ee[0].poligono)
-                return self.polygon2layer(ee[0], desc)
+                return self.polygon2layer(ee[0], desc, file)
             if ee[0].tipo_elemento == 'LN':
                 desc = f'{title} (Línea)'
                 self.total_geom.append(ee[0].linea)
-                return self.line2layer(ee[0], desc)
+                return self.line2layer(ee[0], desc, file)
         else:
             return None
 
-    def points2layer(self, ees, desc):
+    def points2layer(self, ees, desc, file=False):
         layer_nodo_puntos = self.generic_node(f'Puntos: {desc}')
         children_puntos = layer_nodo_puntos['children']
         for ee in ees:
             atrib = ee.atributo if ee.atributo is not None else 'Punto'
             esp_data = [ee.punto.coords[0], ee.punto.coords[1]]
+            if file:
+                layer_str = f'L.marker({esp_data}, {{icon: greenIcon}}).bindPopup("{desc}")'
+            else:
+                layer_str = f'L.marker({esp_data}).bindPopup("{desc}")'
+
             dict_layer = {
                 'label': f'"{atrib}"',
-                'layer': f'L.marker({esp_data}).bindPopup("{atrib}")'
+                'layer': layer_str
             }
             children_puntos.append(dict_layer)
             self.total_geom.append(ee.punto)
 
         return layer_nodo_puntos
 
-    def line2layer(self, ee, desc):
+    def line2layer(self, ee, desc, file=False):
         esp_data = [[c[0], c[1]] for c in ee.linea.coords]
+        if file:
+            layer_str = f'L.polyline({esp_data}, {{color: "green"}}).bindPopup("{desc}")'
+        else:
+            layer_str = f'L.polyline({esp_data}).bindPopup("{desc}")'
+
         dict_layer = {
             'label': f'"{desc}"',
-            'layer': f'L.polyline({esp_data}).bindPopup("{desc}")'
+            'layer': layer_str
         }
 
         return dict_layer
 
-    def polygon2layer(self, ee, desc):
+    def polygon2layer(self, ee, desc, file=False):
         esp_data = [[c[0], c[1]] for c in ee.poligono.coords[0]]
+        if file:
+            layer_str = f'L.polygon({esp_data}, {{color: "green"}}).bindPopup("{desc}")'
+        else:
+            layer_str = f'L.polygon({esp_data}).bindPopup("{desc}")'
+
         dict_layer = {
             'label': f'"{desc}"',
-            'layer': f'L.polygon({esp_data}).bindPopup("{desc}")'
+            'layer': layer_str
         }
 
         return dict_layer
@@ -194,7 +187,7 @@ class JsLayer:
             if layer_doc is not None:
                 layer_doc_title['children'] = [layer_doc]
                 if layer_file_title is not None:
-                    layer_doc['children'] = [layer_file_title]
+                    layer_doc_title['children'].append(layer_file_title)
             else:
                 layer_doc_title['children'] = [layer_file_title]
 
@@ -204,12 +197,15 @@ class JsLayer:
         layer_file = None
         ees = archivo.espacial.all()
         if len(ees) > 0:
-            layer_file = self.ee2layer(ees, archivo.__str__())
+            layer_file = self.ee2layer(ees, archivo.__str__(), True)
 
         return layer_file
 
-    def cordsminmax(self, coords):
-        x_component = [x[0] for x in coords]
-        y_component = [y[1] for y in coords]
-
-        return [[min(x_component), min(y_component)], [max(x_component), max(y_component)]]
+    def cordsminmax(self):
+        if not self.total_geom.empty:
+            coords = self.total_geom.envelope.coords[0]
+            x_component = [x[0] for x in coords]
+            y_component = [y[1] for y in coords]
+            return [[min(x_component), min(y_component)], [max(x_component), max(y_component)]]
+        else:
+            return [[-56.757721, -74.160839], [-21.357144, -53.366386]]

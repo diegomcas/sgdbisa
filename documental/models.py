@@ -64,6 +64,14 @@ class Proyecto(models.Model):
         """
         return self.orden_trabajo
 
+    def if_spatial(self):
+        docs_count = ElementoEspacial.objects.filter(espacialesdoc__proyecto=self).count()
+        files_count = ElementoEspacial.objects.filter(espacialesfile__proyecto=self).count()
+        if (docs_count + files_count) > 0:
+            return True
+        else:
+            return False
+
 
 class Documento(models.Model):
     """

@@ -29,6 +29,7 @@
                     {% if 'documental.change_proyecto' in g_perms %}<th> </th>{% endif %}
                     <th> </th>
                     {% if 'mensajes.add_tique' in g_perms %}<th> </th>{% endif %}
+                    <th> </th>
                     {% if 'documental.finalize_proyecto' in g_perms %}<th> </th>{% endif %}
                 </tr>
             </thead>
@@ -63,6 +64,12 @@
                     {% else %}
                         <td><a class="material-icons md-18" data-toggle="tooltip" title="Gestión de Tiques del Proyecto" href="{% url 'gestion_tiquet' pk_proy=pr.pk %}">assignment_late</a></td>
                     {% endif %}
+                {% endif %}
+
+                {% if pr.if_spatial %}
+                    <td><a class="material-icons md-18" data-toggle="tooltip" title="Mapa de Documentos y Archivos del Proyecto" href="{% url 'mapping' pk_object=pr.pk obj='proyecto' %}">map</a></td>
+                {% else %}
+                    <td><i class="material-icons md-18 md-dark md-inactive" data-toggle="tooltip" title="El Proyecto no presenta elementos mapeables">map</i></td>
                 {% endif %}
 
                 {% if 'documental.finalize_proyecto' in g_perms %}

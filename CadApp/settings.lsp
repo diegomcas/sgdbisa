@@ -1,0 +1,2 @@
+(setq GLOBAL_URL "http://127.0.0.1:8000/")
+(setq GLOBAL_CHARSET "ISO-8859-1")

@@ -7,7 +7,8 @@ from django.contrib.gis.geos import Polygon, MultiPoint, Point, GeometryCollecti
 from django.contrib.gis.measure import D
 # from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import ElementoEspacial
-from documental.models import Documento, Archivo
+from documental.models import Proyecto, Documento, Archivo
+from espacial.spatial_utils import JsLayer
 
 
 def srs_list():
@@ -319,89 +320,23 @@ def ee2layer(elementos_espaciales, desc, total_geom):
     return [lst_layers, total_geom]
 
 
-def proyecto2layers():
-    pass
-
-
-def documetno2layers(documento, total_geom):
-    childrens_doc = []
-    layer_nodo_doc = {
-        'label': f'"Documento {documento.__str__()}"',
-        'selectAllCheckbox': 'true',
-        'children': childrens_doc
-    }
-
-    elementos_espaciales = documento.espacial.all()
-    if elementos_espaciales.count() > 0:
-        layer = ee2layer(elementos_espaciales, documento.__str__(), total_geom)
-        if layer is not None:
-            layer_doc = layer[0]
-            total_geom = layer[1]
-            childrens_doc.extend(layer_doc)
-
-    layer_nodo_arch = None
-    childrens_arch = []
-    archivos = documento.compuesto_por.all()
-    if archivos.count() > 0:
-        layer_nodo_arch = {
-            'label': '"Archivos"',
-            'selectAllCheckbox': 'true',
-            'children': childrens_arch
-        }
-        for archivo in archivos:
-            elementos_espaciales = archivo.espacial.all()
-            if elementos_espaciales.count() > 0:
-                layer = ee2layer(elementos_espaciales, archivo.__str__(), total_geom)
-                if layer is not None:
-                    layer_archivo = layer[0]
-                    total_geom = layer[1]
-                    childrens_arch.extend(layer_archivo)
-
-    if layer_nodo_arch is not None:
-        childrens_doc.append(layer_nodo_arch)
-
-    return [layer_nodo_doc, total_geom]
-
-
-def archivo2layer(archivo):
-    layer = None
-    elementos_espaciales = archivo.espacial.all()
-    if elementos_espaciales.count() > 0:
-        layer = ee2layer(
-            elementos_espaciales,
-            'Archivo ' + archivo.__str__()
-        )
-
-    return layer
-
-
-def cordsminmax(coords):
-    x_component = [x[0] for x in coords]
-    y_component = [y[1] for y in coords]
-
-    return [[min(x_component), min(y_component)], [max(x_component), max(y_component)]]
-
 def mapping(request, pk_object, obj):
     """
-    Presenta en un mapa el el objeto pk_object
+    Presenta en un mapa el objeto pk_object
     """
-    layers = {}
 
     if obj == 'proyecto':
         # Mostrar todos los documentos y los archivos del proyecto
-        pass
+        objeto = get_object_or_404(Proyecto, pk=pk_object)
     if obj == 'documento':
         # Mostrar el docummento y los archivos contenidos
         objeto = get_object_or_404(Documento, pk=pk_object)
-        # Una GeometryCollection para almacenar todas las Geometry y calcular el centroid
-        geometry = GeometryCollection()
-        layers = documetno2layers(objeto, geometry)
-        bounds = f'{cordsminmax(layers[1].envelope.coords[0])}'
-        layers = f'{layers[0]}'.replace('\'', '')
-
     if obj == 'archivo':
         # Mostrar solo el archivo
-        pass
+        objeto = get_object_or_404(Archivo, pk=pk_object)
+
+    obj_layers = JsLayer(objeto)
+    obj_layers.make_layers()
 
     return render(
         request,
@@ -409,20 +344,19 @@ def mapping(request, pk_object, obj):
         {
             'obj': obj,
             'objeto': objeto,
-            'bounds': bounds,
-            'layers': layers,
+            'bounds': obj_layers.cordsminmax(),
+            'layers': obj_layers.leaflet_str(),
         }
     )
 
 
-def query_lists(ees):
+def query_lists(ees, objeto='todo'):
     """
     Genera lista de documentos y archivos resultado de la consulta
     """
     documentos = []
     archivos = []
     for ee in ees:
-        print(f'ee.pk={ee.pk}')
         entidad = {}
         try:
             obj = ee.espacialesdoc.get()
@@ -448,7 +382,11 @@ def query_lists(ees):
             if entidad not in archivos:
                 archivos.append(entidad)
 
-    documentos.extend(archivos)
+    if objeto == 'todo':
+        documentos.extend(archivos)
+    elif objeto == 'archivo':
+        documentos = archivos
+
     return documentos
 
 def consulta_espacial(request):
@@ -469,21 +407,28 @@ def consulta_espacial(request):
             # Armar un punto a partir de coords
             pnt = coords2Point(coords[0], request.GET.get('srid_list'))
 
-            # Distancia de búsqueda
-            distance = float(request.GET.get('distancia'))
-
             # Consulta
-            result = ElementoEspacial.objects.filter(
-                Q(punto__distance_lte=(pnt, D(km=distance))) |
-                Q(poligono__distance_lte=(pnt, D(km=distance))) |
-                Q(linea__distance_lte=(pnt, D(km=distance)))
-            )
+            if tipo_busqueda == 'distancia':
+                # Distancia de búsqueda
+                distance = float(request.GET.get('distancia'))
+
+                result = ElementoEspacial.objects.filter(
+                    Q(punto__distance_lte=(pnt, D(km=distance))) |
+                    Q(poligono__distance_lte=(pnt, D(km=distance))) |
+                    Q(linea__distance_lte=(pnt, D(km=distance)))
+                )
+            else:
+                result = ElementoEspacial.objects.filter(
+                    Q(poligono__contains=(pnt)) |
+                    Q(linea__intersects=(pnt))
+                )
 
             return render(
                 request,
                 'query_result.html',
                 {
-                    'entidades': query_lists(result),
+                    'entidades': query_lists(result, objeto),
+                    # 'query': query,
                 }
             )
 

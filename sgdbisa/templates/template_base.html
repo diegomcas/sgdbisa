@@ -21,43 +21,45 @@
     </head>
     <!--Menú principal-->
     <body style="height: 100%;">
-        <div class="container-fluid"  style="height: 100%;">
+        <div class="container-fluid" style="height: 100%;">
             <div class="row" style="height: 100%;">
-                <div class="col-sm-2">
-                    <nav class="navbar bg-bg-light">
-                        <div class="card center">
-                            <div class="card-body">
-                                <p>Bienvenido <b>{{request.user.username}}</b></p>
-                                <a href="{% url 'logout' %}" class="card-link">Cerrar sesión</a><br>
-                                <a href="{% url 'index' %}" class="card-link">Página de inicio</a>
+                <!-- <div class="col-sm-2"> -->
+                    <div class="col-sm-2">
+                        <div>
+                            <div class="card center">
+                                <div class="card-body">
+                                    <p>Bienvenido <b>{{request.user.username}}</b></p>
+                                    <a href="{% url 'logout' %}" class="card-link">Cerrar sesión</a><br>
+                                    <a href="{% url 'index' %}" class="card-link">Página de inicio</a>
+                                </div>
                             </div>
-                        </div>
 
-                        <ul class="navbar-nav">
-                            <p class="font-weight-bold text-uppercase px-3 small pb-2 pt-4 mb-0">Documental</p>
-                            <li class="nav-item">
-                                <a href="{% url 'proyectos' %}" class="nav-link">Proyectos</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{% url 'index' %}" class="nav-link">Documentos</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{% url 'index' %}" class="nav-link">Archivos</a>
-                            </li>
-                            <p class="text-gray font-weight-bold text-uppercase px-3 small pb-2 pt-4 mb-0">Calidad</p>
-                            <li class="nav-item">
-                                <a href="{% url 'listas_chequeo' %}" class="nav-link">Lista de Chequeo</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{% url 'tipos_chequeo' %}" class="nav-link">Tipos de Chequeo</a>
-                            </li>
-                            <p class="text-gray font-weight-bold text-uppercase px-3 small pb-2 pt-4 mb-0">Espacial</p>
-                            <li class="nav-item">
-                                <a href="{% url 'consulta_espacial' %}" class="nav-link">Busqueda Espacial</a>
-                            </li>
-                        </ul>
-                    </nav>
-                </div>
+                            <ul class="navbar-nav">
+                                <p class="font-weight-bold text-uppercase px-3 small pb-2 pt-4 mb-0">Documental</p>
+                                <li class="nav-item">
+                                    <a href="{% url 'proyectos' %}" class="nav-link">Proyectos</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{% url 'index' %}" class="nav-link">Documentos</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{% url 'index' %}" class="nav-link">Archivos</a>
+                                </li>
+                                <p class="text-gray font-weight-bold text-uppercase px-3 small pb-2 pt-4 mb-0">Calidad</p>
+                                <li class="nav-item">
+                                    <a href="{% url 'listas_chequeo' %}" class="nav-link">Lista de Chequeo</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{% url 'tipos_chequeo' %}" class="nav-link">Tipos de Chequeo</a>
+                                </li>
+                                <p class="text-gray font-weight-bold text-uppercase px-3 small pb-2 pt-4 mb-0">Espacial</p>
+                                <li class="nav-item">
+                                    <a href="{% url 'consulta_espacial' %}" class="nav-link">Busqueda Espacial</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                <!-- </div> -->
             
                 <div class="col-sm-10" style="height: 100%;">
                     {% block contenido %}

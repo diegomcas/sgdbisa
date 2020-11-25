@@ -67,7 +67,15 @@ class DocumentoForm(ModelForm):
 
     class Meta:
         model = Documento
-        exclude = ['proyecto', 'reemplaza_a', 'reemplazado_por', 'espacial', 'mensaje', 'tique']
+        exclude = [
+            'proyecto',
+            'reemplaza_a',
+            'reemplazado_por',
+            'espacial',
+            'mensaje',
+            'tique',
+            'tique_revision',
+        ]
 
     def __init__(self, project, *args, **kwargs):
         super(DocumentoForm, self).__init__(*args, **kwargs)
@@ -87,6 +95,30 @@ class DocumentoForm(ModelForm):
         self.fields['compuesto_por'].queryset = qsf
         # self.fields['refiere_a'].empty_label = '-------'
         # self.fields['compuesto_por'].empty_label = '-------'
+
+
+class ObsDocForm(ModelForm):
+    """
+    Formulario de aceptación y modificación de finalización
+    de tique de observación de un Documento
+    """
+    fecha = forms.DateField(
+        widget=MyDateInput(attrs={'type': 'date'}),
+        help_text="Fecha del documento (la que se define en el rótulo)"
+    )
+
+    descripcion = forms.CharField(
+        max_length=1000,
+        widget=forms.Textarea(attrs={'cols': 80, 'rows': 2}),
+        help_text="Breve descripción del Documento"
+    )
+
+    class Meta:
+        model = Documento
+        fields = [
+            'fecha',
+            'descripcion',
+        ]
 
 
 class ArchivoForm(ModelForm):

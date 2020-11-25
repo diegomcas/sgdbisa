@@ -2,10 +2,15 @@ from django.utils import timezone
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db import IntegrityError, DatabaseError, transaction
 from django.contrib.auth.decorators import login_required, user_passes_test
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
 from .models import Proyecto, Documento, Archivo
 from calidad.models import Chequeo
 from mensajes.models import Tique, Mensaje, MensajeDestinatarios, TiqueDestinatarios
-from .forms import ProyectoForm, DocumentoForm, ArchivoForm
+from .forms import ProyectoForm, DocumentoForm, ArchivoForm, ObsDocForm
+from .serializers import DocumentoSerializer
 from .test_perms import list_proyectos, finalize_proyecto, view_proyecto, add_proyecto, update_proyecto
 from .test_perms import list_documentos, view_documento, add_documento, update_documento
 from .test_perms import delete_documento, revision_documento
@@ -223,6 +228,43 @@ def edita_documento(request, pk_proy, pk_doc, pk_tique):
         request,
         'documento.html',
         {'form': form}
+    )
+
+
+@user_passes_test(update_documento)
+@login_required
+def observacion_documento(request, pk_proy, pk_doc, pk_tique):
+    """
+    Ejecuta versión reducida del formulario de modificación de documento
+    relativo a observaciones
+    """
+
+    doc_observado = get_object_or_404(Documento, pk=pk_doc)
+    tique = get_object_or_404(Tique, pk=pk_tique)
+
+    if request.method == "POST":
+        form = ObsDocForm(request.POST, instance=doc_observado)
+        if form.is_valid():
+            form.save()
+
+            # Emitir mensaje
+            emitir_mensaje(doc_observado, 'Se ha emitido una observación del documento.')
+
+            # Finalizar Tique
+            tique.finalizado = True
+            tique.fecha_finalización = timezone.now()
+            tique.save()
+            return redirect('index')
+    else:
+        form = ObsDocForm(instance=doc_observado)
+
+    return render(
+        request,
+        'documento_observacion.html',
+        {
+            'form': form,
+            'tique': tique
+        }
     )
 
 
@@ -481,3 +523,22 @@ def elimina_archivo(request, pk_proy, pk_file):
         'archivo_delete.html',
         {'archivo': archivo}
     )
+
+
+# ----------------------------------------------------------------------
+# API REST VIEWs -------------------------------------------------------
+# ----------------------------------------------------------------------
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def find_docs(request, num_doc):
+    """
+    Retorna solo los documentos de numero num_doc en su ultima revisión
+    """
+    if request.method == 'GET':
+        documentos = Documento.objects.filter(
+            numero__contains=num_doc,
+            documento_reemplazado_por=None
+        )
+
+        serializer = DocumentoSerializer(documentos, many=True)
+        return Response(serializer.data)

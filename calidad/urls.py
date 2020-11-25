@@ -72,4 +72,11 @@ urlpatterns = [
         views.estado_calidad,
         name='estado_calidad'
     ),
+    # ----------------------------------------------------------------------
+    # API REST URLs --------------------------------------------------------
+    # ----------------------------------------------------------------------
+    # Lista Los Chequeos del documento "pk_doc"
+    path('api-doc-chequeo/<int:pk_doc>/get/', views.chequeo_doc_get),
+    # Recibe checks y actualiza estado en la Base de Datos
+    path('api-doc-chequeo/put/', views.chequeo_doc_put),
 ]

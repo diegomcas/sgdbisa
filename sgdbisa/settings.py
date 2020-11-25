@@ -46,6 +46,9 @@ INSTALLED_APPS = [
 
     'django_extensions',
     'widget_tweaks',
+
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -148,3 +151,9 @@ STATICFILES_DIRS = [
 ]
 
 LOGIN_URL = '/login/'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}

@@ -68,6 +68,7 @@ def tiques_abiertos_info(usuario):
     return tiques
 
 def mensajes_info(usuario):
+    # print(f'usuario:{usuario}')
     mensajes = []
     mensajes_dest = MensajeDestinatarios.objects.filter(miembro=usuario, leido=False)
     mensajes_dest = mensajes_dest.order_by('mensaje__fecha')
@@ -98,7 +99,6 @@ def mensajes_info(usuario):
     return mensajes
 
 
-# Create your views here.
 def index(request):
     """
     Esta vista responde a la ruta vacía (solo nombre de dominio)

@@ -1,7 +1,12 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
 from .models import ListaChequeo, TipoChequeo, Chequeo
 from documental.models import Proyecto, Documento
+from .serializers import DocumentoChequeoSerializer, ChequeoRealizadoSerializer
 from .forms import ListaChequeoForm, TipoChequeoForm
 from .test_perms import list_listas_chequeo, view_lista_chequeo, add_lista_chequeo
 from .test_perms import update_lista_chequeo, delete_lista_chequeo
@@ -347,3 +352,37 @@ def estado_calidad(request, pk_proy):
             'proyecto': proyecto
         }
     )
+
+
+# ----------------------------------------------------------------------
+# API REST VIEWs -------------------------------------------------------
+# ----------------------------------------------------------------------
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def chequeo_doc_get(request, pk_doc):
+    """
+    ---
+    """
+    if request.method == 'GET':
+        doc_check = Documento.objects.get(pk=pk_doc)
+        print(doc_check)
+        serializer = DocumentoChequeoSerializer(doc_check)
+        print(serializer.data)
+        return Response(serializer.data)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def chequeo_doc_put(request):
+    """
+    ---
+    """
+    if request.method == 'PUT':
+        serializer = ChequeoRealizadoSerializer(data=request.data, many=True)
+        if serializer.is_valid():
+            # print("Antes de llamar al save()")
+            serializer.save(owner=request.user)
+            # print("Después de llamar al save()")
+            return Response(serializer.data)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

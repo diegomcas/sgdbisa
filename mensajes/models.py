@@ -74,6 +74,11 @@ class Tique(models.Model):
     #    help_text="Miembros del equipo de Proyecto"
     # )
 
+    def __str__(self):
+        """
+        """
+        return self.descripcion
+
     class Meta:
         indexes = [
             models.Index(fields=['fecha_emision', ]),

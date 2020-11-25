@@ -43,6 +43,11 @@ urlpatterns = [
         name='edita_documento'
     ),
     path(
+        'proyecto/<int:pk_proy>/documento/<int:pk_doc>/<int:pk_tique>/obs/',
+        views.observacion_documento,
+        name='observacion_documento'
+    ),
+    path(
         'proyecto/<int:pk_proy>/documento/<int:pk_doc>/<int:pk_tique>/revision/',
         views.revision_documento,
         name='revision_documento'
@@ -82,4 +87,9 @@ urlpatterns = [
         views.elimina_archivo,
         name='elimina_archivo'
     ),
+    # ----------------------------------------------------------------------
+    # API REST URLs --------------------------------------------------------
+    # ----------------------------------------------------------------------
+    # Filtra documentos por Nombre o parte del Nombre
+    path('api-find-docs/<str:num_doc>', views.find_docs),
 ]

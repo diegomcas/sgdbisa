@@ -22,7 +22,7 @@
                     <p class="card-text">Fecha emisión: {{ tq_user.fecha_emision }} Fecha adquisición: {{ tq_user.fecha_adquisicion }}</p>
                     {% if tq_user.tipo_obj == 'Documento' %}
                         {% if tq_user.tipo == 'OBS' %}
-                            <a href="{% url 'edita_documento' pk_proy=tq_user.proyecto_pk pk_doc=tq_user.obj_pk pk_tique=tq_user.pk %}" class="card-link">Finalizar tique</a>
+                            <a href="{% url 'observacion_documento' pk_proy=tq_user.proyecto_pk pk_doc=tq_user.obj_pk pk_tique=tq_user.pk %}" class="card-link">Finalizar tique</a>
                         {% endif %}
                         {% if tq_user.tipo == 'REV' %}
                             <a href="{% url 'revision_documento' pk_proy=tq_user.proyecto_pk pk_doc=tq_user.obj_pk pk_tique=tq_user.pk %}" class="card-link">Finalizar tique</a>

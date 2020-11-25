@@ -1,0 +1,33 @@
+{% extends 'template_base.html' %}
+{% load static %}
+
+{% block contenido %}
+
+<script type="text/javascript" src="{% static 'admin/js/jquery.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/core.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/SelectBox.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/SelectFilter2.js' %}"></script>
+<div class="row">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">Finalizar Tique de observación del Documento: {{ tique.tiquesdoc.get }}: (Proyecto: {{ tique.tiquesdoc.get.proyecto }})</h4>
+            <p class="card-text">{{ tique.descripcion }}</p>
+            <p class="card-text">Fecha emisión: {{ tique.fecha_emision }}, Fecha adquisición: {{ tique.fecha_adquisicion }}</p>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <h5>Cambios al Documento (Opcional)</h5>
+        <form method="POST" class="post-form">
+        {% csrf_token %}
+        <div>
+        {% include 'template_form.html' with form=form %}
+        </div>
+
+
+        <div class="float-sm-right pt-4"><button type="submit" class="btn btn-secondary btn-lg">Guardar</button></div>
+        </form>
+    </div>
+</div>
+{% endblock %}
